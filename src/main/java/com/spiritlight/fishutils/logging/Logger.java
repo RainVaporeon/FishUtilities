@@ -46,11 +46,12 @@ public class Logger implements ILogger {
     public Result setOut(File out) {
         if(Thread.currentThread() != creator) throw new SecurityException("setOut() can only be called by creator thread");
         try {
+            if(!out.exists()) out.createNewFile();
             Field field = this.getClass().getDeclaredField("out");
             field.setAccessible(true);
             field.set(this, out);
             return Result.SUCCESS;
-        } catch (ReflectiveOperationException e) {
+        } catch (ReflectiveOperationException | IOException e) {
             this.fatal("Could not set out of " + this.name + ":", e);
             return Result.ERROR;
         }

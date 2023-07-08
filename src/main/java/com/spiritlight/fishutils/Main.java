@@ -1,27 +1,18 @@
 package com.spiritlight.fishutils;
 
-import com.spiritlight.fishutils.random.WeightedRandom;
+import com.spiritlight.fishutils.collections.CollectionUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        WeightedRandom<Integer> random = new WeightedRandom<>();
-        random.addObject(1, 1);
-        random.addObject(2, 2);
-        random.addObject(3, 3);
-        random.addObject(4, 4);
-        Map<Integer, Integer> iMap = new HashMap<>();
-        for(int i = 0; i < 1000000; i++) {
-            int val = random.getNext();
-            if(iMap.containsKey(val)) {
-                iMap.put(val, iMap.get(val) + 1);
-            } else {
-                iMap.put(val, 1);
-            }
-        }
-        // Expect around 1000 1, 2000 2, 3000 3, 4000 4, if it's close enough this succeeds.
-        System.out.println(iMap);
+        List<Integer> i1 = List.of(1, 2, 3, 4, 5);
+        List<Integer> i2 = List.of(6, 7, 8, 9, 0);
+        List<Integer> i3 = List.of(-1, -2, -3, -4);
+        List<Integer> i4 = List.of(-5, -6, -7, -8);
+
+        List<List<Integer>> all = List.of(i1, i2, i3, i4);
+
+        System.out.println(all.stream().collect(CollectionUtils.extractToList()));
     }
 }
