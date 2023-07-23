@@ -1,17 +1,40 @@
 package com.spiritlight.fishutils.action;
 
+import com.spiritlight.fishutils.collections.Pair;
+
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * An object representing the execution status of an action. This is bundled
+ * with a {@link Result} denoting the execution result, and can hold a return value
+ * and a throwable if an exception had occurred.
+ * <p>
+ * The implementation also supports multiple chaining statements to provide ease of execution,
+ * such as {@link ActionResult#expect(Class, Consumer)} to handle specific exceptions,
+ * throwing exceptions with {@link ActionResult#throwIfPresent()} and such.
+ * @param <T> The return type
+ * @apiNote This object is not meant to be serialized, and only recommended to be used as
+ * return values for simplifying handling the result of executing something.
+ */
 public class ActionResult<T> {
+
+    private static final ActionResult<?> DEFAULT_SUCCESS = new ActionResult<>(Result.SUCCESS, null);
+
     private final Result result;
     private final T returnValue;
     private final Throwable throwable;
     private boolean exceptionHandled;
 
+    /**
+     * Creates a new ActionResult instance with the provided parameters
+     * @param result A non-null value representing the result state
+     * @param returnValue The return value of this object
+     * @param throwable The throwable if any is present
+     */
     public ActionResult(Result result, T returnValue, Throwable throwable) {
         Objects.requireNonNull(result);
         this.result = result;
@@ -20,10 +43,20 @@ public class ActionResult<T> {
         this.exceptionHandled = throwable == null;
     }
 
+    /**
+     * Creates a new ActionResult holding the result and a return value, the throwable is null in this case
+     * @param result The result
+     * @param returnValue The return value
+     */
     public ActionResult(Result result, T returnValue) {
         this(result, returnValue, null);
     }
 
+    /**
+     * Creates a new ActionResult holding the result and a throwable, the return value is null in this case
+     * @param result The result
+     * @param throwable The return value
+     */
     public ActionResult(Result result, Throwable throwable) {
         this(result, null, throwable);
     }
@@ -80,7 +113,7 @@ public class ActionResult<T> {
      */
     public T getReturnValue() {
         if(!this.exceptionHandled && this.throwable != null) {
-            this.throwException();
+            this.throwUnchecked();
         }
         return returnValue;
     }
@@ -126,30 +159,84 @@ public class ActionResult<T> {
         return this;
     }
 
+    /**
+     * Throws the exception if the provided type is caught
+     * @param type The type of exception
+     * @return itself for chaining purposes, if no such exception exist
+     * @param <X> The exception type
+     * @throws X The exception
+     */
+    public <X extends Throwable> ActionResult<T> throwIf(Class<X> type) throws X {
+        if(this.throwable == null) return this;
+        if(Objects.requireNonNull(type).isAssignableFrom(this.throwable.getClass())) throw (X) this.throwable;
+        return this;
+    }
+
+    /**
+     * Throws the exception if any is present
+     * @return itself for chaining purposes, if no such exception exist
+     * @throws Throwable if one is present, regardless whether it has been handled.
+     */
+    public ActionResult<T> throwIfPresent() throws Throwable {
+        if(this.throwable != null) throw throwable;
+        return this;
+    }
+
+    /**
+     * Checks whether the result is {@link Result#SUCCESS}
+     * @return
+     */
     public boolean isSuccessful() {
         return this.result == Result.SUCCESS;
     }
 
+    /**
+     * Checks whether the result is not {@link Result#SUCCESS}
+     * @return
+     */
     public boolean failed() {
         return !isSuccessful();
     }
 
+    // as of version 1.1, this returns a shared object instead
+    /**
+     * Convenience method to create an ActionResult that holds {@code null}
+     * as the return type.
+     */
     public static <T> ActionResult<T> success() {
-        return success(null);
+        return (ActionResult<T>) DEFAULT_SUCCESS;
     }
 
+    /**
+     * Convenience method to create an ActionResult that the provided element
+     * as the return type.
+     */
     public static <T> ActionResult<T> success(T element) {
         return new ActionResult<>(Result.SUCCESS, element, null);
     }
 
+    /**
+     * Convenience method to create an ActionResult with the current
+     * stacktrace as the exception.
+     */
     public static <T> ActionResult<T> fail() {
         return new ActionResult<>(Result.FAIL, getDefaultException());
     }
 
     // note: If throwable is not null it used to return FAIL here, if something breaks,
     // this should be the first thing to check out.
+
+    // right as of version 1.1, null-supplied fail no longer fetches
+    // the exception, if needed, use ActionResult#fail().
+    /**
+     * Convenience method to create an ActionResult with the provided
+     * throwable as the exception.
+     * @param throwable The throwable, can be null
+     * @return An ActionResult holding {@link Result#FAIL}, or {@link Result#ERROR}
+     * if throwable is not null
+     */
     public static <T> ActionResult<T> fail(Throwable throwable) {
-        if(throwable == null) return fail();
+        if(throwable == null) return new ActionResult<>(Result.FAIL, null, null);
         return new ActionResult<>(Result.ERROR, throwable);
     }
 
@@ -161,6 +248,15 @@ public class ActionResult<T> {
         }
     }
 
+    public static <T> ActionResult<T> tryAction(ResultRunnable<T> runnable) {
+        try {
+            Pair<Result, T> pair = runnable.run();
+            return new ActionResult<>(pair.getKey(), pair.getValue());
+        } catch (Exception e) {
+            return ActionResult.fail(e);
+        }
+    }
+
     public Result getResult() {
         return result;
     }
@@ -169,11 +265,13 @@ public class ActionResult<T> {
         return new RuntimeException("No information provided").fillInStackTrace();
     }
 
-    private void throwException() {
+    public ActionResult<T> throwUnchecked() {
+        if(this.throwable == null) return this;
+        if(this.throwable instanceof Error e) throw e;
         if(this.throwable instanceof RuntimeException rte) throw rte;
-        if(this.throwable instanceof Error error) throw error;
         throw new RuntimeException(this.throwable);
     }
+
 
     @Override
     public boolean equals(Object o) {

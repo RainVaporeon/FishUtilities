@@ -25,6 +25,7 @@ public class WeightedRandom<T> {
 
 
     public void addObject(T object, int weight) {
+        if(weight < 0) throw new IllegalArgumentException("weight cannot be less than 0");
         weightMap.put(object, weight);
 
         synchronized (mutex) {
