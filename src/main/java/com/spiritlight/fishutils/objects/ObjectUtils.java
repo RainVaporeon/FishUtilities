@@ -1,5 +1,8 @@
 package com.spiritlight.fishutils.objects;
 
+import com.spiritlight.fishutils.action.ActionResult;
+import com.spiritlight.fishutils.action.Result;
+
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -10,11 +13,20 @@ public class ObjectUtils {
         return mapper.apply(object);
     }
 
-    public static <T> boolean assertOrElse(Supplier<Boolean> test, Runnable otherwise) {
+    public static boolean assertOrElse(Supplier<Boolean> test, Runnable otherwise) {
         if(test.get()) {
             return true;
         } else {
             otherwise.run();
+            return false;
+        }
+    }
+
+    public static <T> boolean execute(Supplier<T> sup) {
+        try {
+            sup.get();
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }

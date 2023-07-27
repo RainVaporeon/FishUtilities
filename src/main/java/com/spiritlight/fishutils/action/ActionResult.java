@@ -1,13 +1,18 @@
 package com.spiritlight.fishutils.action;
 
 import com.spiritlight.fishutils.collections.Pair;
+import com.spiritlight.fishutils.misc.ThrowingSupplier;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
+/*
+* INTERNAL CHANGELOG:
+* 1.1.1: All references to returnValue is now retrieved with the getter.
+
+ */
 /**
  * An object representing the execution status of an action. This is bundled
  * with a {@link Result} denoting the execution result, and can hold a return value
@@ -61,14 +66,21 @@ public class ActionResult<T> {
         this(result, null, throwable);
     }
 
+    // 1.1: Returns itself instead
     /**
      * Accepts this result's returned value
      * @param consumer the consumer to handle the value
-     * @return the returned value
+     * @return the object itself, or fail if any exceptions occurred
+     * @apiNote if execution fails, the returned ActionResult still will hold this object's
+     * return value.
      */
-    public T accept(Consumer<T> consumer) {
-        consumer.accept(this.returnValue);
-        return this.returnValue;
+    public ActionResult<T> consume(Consumer<T> consumer) {
+        try {
+            consumer.accept(this.getReturnValue());
+            return this;
+        } catch (Exception e) {
+            return new ActionResult<>(Result.ERROR, this.getReturnValue(), e);
+        }
     }
 
     /**
@@ -77,9 +89,9 @@ public class ActionResult<T> {
      * @return The action result for the returned value
      * @param <R> The return type
      */
-    public <R> ActionResult<R> accept(Function<T, R> function) {
+    public <R> ActionResult<R> map(Function<T, R> function) {
         try {
-            return new ActionResult<>(Result.SUCCESS, function.apply(this.returnValue));
+            return new ActionResult<>(Result.SUCCESS, function.apply(this.getReturnValue()));
         } catch (Throwable t) {
             return new ActionResult<>(Result.ERROR, t);
         }
@@ -101,6 +113,21 @@ public class ActionResult<T> {
             //noinspection unchecked
             action.accept((X) this.throwable);
             this.exceptionHandled = true;
+        }
+        return this;
+    }
+
+    /**
+     * Handles the exception and produces a new value
+     * @param type The type of exception to expect
+     * @param handler The handler to execute, if this type is expected
+     * @return the same ActionResult for chaining purposes, or a new one specified by the handler
+     * @param <X> The exception type
+     */
+    public <X extends Throwable> ActionResult<T> expect(Class<X> type, Function<X, T> handler) {
+        if(this.throwable == null) return this;
+        if(type.isAssignableFrom(this.throwable.getClass())) {
+            return ActionResult.success(handler.apply((X) this.throwable));
         }
         return this;
     }
@@ -135,8 +162,6 @@ public class ActionResult<T> {
      *
      * @param consumer the handler if the result is {@link Result#SUCCESS}
      * @return itself for chaining purposes
-     * @see ActionResult#accept(Function)
-     * @see ActionResult#accept(Consumer)
      */
     public ActionResult<T> onSuccess(Consumer<T> consumer) {
         if(result == Result.SUCCESS) {
@@ -152,10 +177,27 @@ public class ActionResult<T> {
      * @see ActionResult#expect(Class, Consumer)
      */
     public ActionResult<T> onFail(BiConsumer<Result, Throwable> consumer) {
-        if(result != Result.SUCCESS) {
-            consumer.accept(this.result, this.throwable);
+        if(result != Result.SUCCESS && this.throwable != null) {
+            consumer.accept(result, this.throwable);
             this.exceptionHandled = true;
         }
+        return this;
+    }
+
+    public ActionResult<T> onFail(Consumer<Throwable> consumer) {
+        if(result != Result.SUCCESS && this.throwable != null) {
+            consumer.accept(this.throwable);
+            this.exceptionHandled = true;
+        }
+        return this;
+    }
+
+    /**
+     * Ignores this exception and moves on
+     * @return the object itself
+     */
+    public ActionResult<T> ignoreFail() {
+        this.exceptionHandled = true;
         return this;
     }
 
@@ -240,10 +282,10 @@ public class ActionResult<T> {
         return new ActionResult<>(Result.ERROR, throwable);
     }
 
-    public static <T> ActionResult<T> tryAction(Supplier<T> action) {
+    public static <T> ActionResult<T> tryAction(ThrowingSupplier<T> action) {
         try {
             return new ActionResult<>(Result.SUCCESS, action.get());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return new ActionResult<>(Result.ERROR, e);
         }
     }
@@ -252,7 +294,7 @@ public class ActionResult<T> {
         try {
             Pair<Result, T> pair = runnable.run();
             return new ActionResult<>(pair.getKey(), pair.getValue());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return ActionResult.fail(e);
         }
     }
