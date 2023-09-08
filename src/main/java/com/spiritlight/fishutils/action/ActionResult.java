@@ -1,6 +1,7 @@
 package com.spiritlight.fishutils.action;
 
 import com.spiritlight.fishutils.collections.Pair;
+import com.spiritlight.fishutils.misc.ThrowingRunnable;
 import com.spiritlight.fishutils.misc.ThrowingSupplier;
 
 import java.util.Objects;
@@ -41,8 +42,7 @@ public class ActionResult<T> {
      * @param throwable The throwable if any is present
      */
     public ActionResult(Result result, T returnValue, Throwable throwable) {
-        Objects.requireNonNull(result);
-        this.result = result;
+        this.result = Objects.requireNonNull(result);;
         this.returnValue = returnValue;
         this.throwable = throwable;
         this.exceptionHandled = throwable == null;
@@ -294,6 +294,15 @@ public class ActionResult<T> {
         try {
             Pair<Result, T> pair = runnable.run();
             return new ActionResult<>(pair.getKey(), pair.getValue());
+        } catch (Throwable e) {
+            return ActionResult.fail(e);
+        }
+    }
+
+    public static ActionResult<Void> tryAction(ThrowingRunnable runnable) {
+        try {
+            runnable.run();
+            return ActionResult.success();
         } catch (Throwable e) {
             return ActionResult.fail(e);
         }

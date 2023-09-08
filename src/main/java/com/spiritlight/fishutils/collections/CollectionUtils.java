@@ -4,13 +4,26 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collector;
 
 public class CollectionUtils {
+
+    /**
+     * Generates a collection of size and function
+     * @param size The size
+     * @param function The function for each individual index
+     * @return The generated mutable collection
+     */
+    public static <T> List<T> generateCollection(int size, IntFunction<T> function) {
+        List<T> list = new ArrayList<>(size);
+
+        for(int i = 0; i < size; i++) {
+            list.add(function.apply(i));
+        }
+
+        return list;
+    }
 
     public static <T> Collector<Collection<T>, List<T>, List<T>> extractToList() {
         return new Collector<>() {
