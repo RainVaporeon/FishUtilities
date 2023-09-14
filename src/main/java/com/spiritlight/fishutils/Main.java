@@ -1,23 +1,17 @@
 package com.spiritlight.fishutils;
 
-import com.spiritlight.fishutils.collections.ArrayUtils;
-import com.spiritlight.fishutils.collections.CollectionMisc;
-import com.spiritlight.fishutils.collections.CollectionUtils;
-import com.spiritlight.fishutils.collections.iterators.MultiArrayIterator;
-import com.spiritlight.fishutils.misc.Effect;
+import com.spiritlight.fishutils.tests.Test;
+import sun.misc.Unsafe;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
         try {
-            Object[][][] data = new Object[50][50][50];
-            MultiArrayIterator<Object> it = new MultiArrayIterator<>(data);
-            int size = 0;
-            for(Object o : it) size++;
-            System.out.println(size); // 125000
-            Arrays.deepToString(data);
+
         } catch (Throwable t) {
             //noinspection CallToPrintStackTrace
             t.printStackTrace();
@@ -35,17 +29,7 @@ public class Main {
     }
 
     private static void effectTest() {
-        Effect<Object> first = Effect.of(new Object());
-        Effect<Integer> second = Effect.of(12);
-        Effect<Double> third = Effect.of(123.4);
 
-        first.addListener(getConsumer(Object.class));
-        second.addListener(getConsumer(Integer.class));
-        third.addListener(getConsumer(Double.class));
-
-        first.setValue(new Object());
-        second.setValue(42);
-        third.setValue(69.420);
     }
 
     private static <T> Consumer<T> getConsumer(Class<T> clazz) {

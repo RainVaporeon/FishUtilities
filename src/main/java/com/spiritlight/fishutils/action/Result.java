@@ -8,13 +8,10 @@ package com.spiritlight.fishutils.action;
  */
 public enum Result {
     /**
-     * Indicating that this action is successful
+     * Indicating that this action is successful, a value is usually
+     * associated with this return result
      */
     SUCCESS,
-    /**
-     * Indicating that this action is unsuccessful due to insufficient permissions
-     */
-    NO_PERMISSION,
     /**
      * Indicating that this action is unsuccessful due to some sort of exception
      * during execution.
