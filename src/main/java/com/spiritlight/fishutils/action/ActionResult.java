@@ -135,7 +135,8 @@ public class ActionResult<T> implements Action<T> {
     }
 
     /**
-     * Acquires the return value
+     * Retrieves the underlying return value. May raise exceptions
+     * if an unhandled one is present.
      * @return the return value
      * @apiNote this method will throw an exception if
      * one is present and is not handled.
