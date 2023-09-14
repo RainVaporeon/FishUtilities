@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+// to be implemented, but it's the same as running ArrayUtils#unpackArray(Object) and iterate from there
 public class MultiArrayIterator<T> implements MultiDimensionIterator<T> {
     private final Object array;
     private final Map<Integer, Integer> visits;
