@@ -1,6 +1,7 @@
 package com.spiritlight.fishutils.action;
 
 import com.spiritlight.fishutils.collections.Pair;
+import com.spiritlight.fishutils.logging.ILogger;
 import com.spiritlight.fishutils.misc.ThrowingRunnable;
 import com.spiritlight.fishutils.misc.ThrowingSupplier;
 
@@ -26,14 +27,15 @@ import java.util.function.Function;
  * @apiNote This object is not meant to be serialized, and only recommended to be used as
  * return values for simplifying handling the result of executing something.
  */
-public class ActionResult<T> {
+public class ActionResult<T> implements Action<T> {
 
+    // Shared default value
     private static final ActionResult<?> DEFAULT_SUCCESS = new ActionResult<>(Result.SUCCESS, null);
 
-    private final Result result;
-    private final T returnValue;
-    private final Throwable throwable;
-    private boolean exceptionHandled;
+    private final Result result; // The result (non-null)
+    private final T returnValue; // Holding value (nullable)
+    private final Throwable throwable; // Exception (null if successful)
+    private boolean exceptionHandled; // Exception handled (@throws throwable if false and throwable != null)
 
     /**
      * Creates a new ActionResult instance with the provided parameters
@@ -137,10 +139,12 @@ public class ActionResult<T> {
      * @return the return value
      * @apiNote this method will throw an exception if
      * one is present and is not handled.
+     * @see ActionResult#ignoreFail()
+     * @see ActionResult#expect(Class, Consumer)
      */
     public T getReturnValue() {
         if(!this.exceptionHandled && this.throwable != null) {
-            this.throwUnchecked();
+            this.throwUnchecked0();
         }
         return returnValue;
     }
@@ -184,6 +188,13 @@ public class ActionResult<T> {
         return this;
     }
 
+    /**
+     * Utility method to handle any throwable if the result is not {@link Result#SUCCESS}.
+     * Useful when the result is irrelevant
+     * @param consumer a consumer that takes a Throwable for handling
+     * @return itself for chaining purposes
+     * @see ActionResult#expect(Class, Consumer)
+     */
     public ActionResult<T> onFail(Consumer<Throwable> consumer) {
         if(result != Result.SUCCESS && this.throwable != null) {
             consumer.accept(this.throwable);
@@ -215,9 +226,24 @@ public class ActionResult<T> {
     }
 
     /**
+     * Throws the exception as unchecked if any of the provided types are caught
+     * @param types the types
+     * @return itself if no such exception is present
+     */
+    @SafeVarargs
+    public final ActionResult<T> throwUncheckedIf(Class<? extends Throwable>... types) {
+        if(this.throwable == null) return this;
+        for(Class<?> clazz : types) {
+            if(clazz.isAssignableFrom(this.throwable.getClass())) throwUnchecked0();
+        }
+        return this;
+    }
+
+    /**
      * Throws the exception if any is present
      * @return itself for chaining purposes, if no such exception exist
      * @throws Throwable if one is present, regardless whether it has been handled.
+     * @see ActionResult#throwIf(Class)
      */
     public ActionResult<T> throwIfPresent() throws Throwable {
         if(this.throwable != null) throw throwable;
@@ -282,6 +308,12 @@ public class ActionResult<T> {
         return new ActionResult<>(Result.ERROR, throwable);
     }
 
+    /**
+     * Tries to run this action
+     * @param action the action to run
+     * @return a success action with the value if no exceptions occurred,
+     * otherwise return a failed action with the exception
+     */
     public static <T> ActionResult<T> tryAction(ThrowingSupplier<T> action) {
         try {
             return new ActionResult<>(Result.SUCCESS, action.get());
@@ -290,6 +322,12 @@ public class ActionResult<T> {
         }
     }
 
+    /**
+     * Tries to run this action
+     * @param runnable the runnable for execution, providing a result and return value
+     * @return an action holding the result and value if no exceptions occurred,
+     * otherwise return a failed action with the exception
+     */
     public static <T> ActionResult<T> tryAction(ResultRunnable<T> runnable) {
         try {
             Pair<Result, T> pair = runnable.run();
@@ -299,6 +337,12 @@ public class ActionResult<T> {
         }
     }
 
+    /**
+     * Tries to run this action
+     * @param runnable the runnable for execution
+     * @return a success action if no exceptions occurred,
+     * otherwise return a failed action with the exception
+     */
     public static ActionResult<Void> tryAction(ThrowingRunnable runnable) {
         try {
             runnable.run();
@@ -308,6 +352,10 @@ public class ActionResult<T> {
         }
     }
 
+    /**
+     * Gets the result value
+     * @return the result
+     */
     public Result getResult() {
         return result;
     }
@@ -316,8 +364,21 @@ public class ActionResult<T> {
         return new RuntimeException("No information provided").fillInStackTrace();
     }
 
+    /**
+     * Throws the exception this object currently holds if it is present,
+     * otherwise return itself
+     * @return itself
+     */
     public ActionResult<T> throwUnchecked() {
-        if(this.throwable == null) return this;
+        throwUnchecked0();
+        return this;
+    }
+
+    /**
+     * internal method to throw existing exception as an unchecked one, otherwise ignore
+     */
+    private void throwUnchecked0() {
+        if(this.throwable == null) return;
         if(this.throwable instanceof Error e) throw e;
         if(this.throwable instanceof RuntimeException rte) throw rte;
         throw new RuntimeException(this.throwable);
