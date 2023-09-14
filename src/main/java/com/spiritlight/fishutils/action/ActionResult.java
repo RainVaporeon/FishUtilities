@@ -155,7 +155,11 @@ public class ActionResult<T> implements Action<T> {
      * @return the throwable
      * @apiNote if this method is called, it's assumed that
      * the exception is handled, and therefore any future calls of
-     * {@link ActionResult#getReturnValue()} will not throw an exception.
+     * {@link ActionResult#getReturnValue()} will not throw an exception unless
+     * any processing methods recreated one.
+     * It's not like you'd usually retrieve a return value and an exception,
+     * but this can come in handy if you are handling an exception safely and
+     * need a default return value anyway.
      */
     public Throwable getThrowable() {
         this.exceptionHandled = true;
