@@ -21,9 +21,10 @@ public class ArrayIterator<T> implements Iterable<T>, Iterator<T> {
         this.cursor = 0;
     }
 
-    public static <T> ArrayIterator<T> create(Object array) {
+    @SuppressWarnings("unchecked") /* Should be fine */
+    public static <T> Iterator<T> create(Object array) {
         if(array == null || !array.getClass().isArray()) {
-            return new SingletonIterator<>(array);
+            return new SingletonIterator<>((T) array);
         } else {
             return new ArrayIterator<>((T[]) array);
         }
@@ -44,26 +45,24 @@ public class ArrayIterator<T> implements Iterable<T>, Iterator<T> {
         return array[cursor++];
     }
 
-    private static class SingletonIterator<E> extends ArrayIterator<E> {
-        private final Object element;
-        private int cursor;
+    private static class SingletonIterator<E> implements Iterator<E> {
+        private final E element;
+        private boolean iterated;
 
-        private SingletonIterator(Object element) {
-            super();
+        private SingletonIterator(E element) {
             this.element = element;
-            this.cursor = 0;
         }
 
         @Override
         public boolean hasNext() {
-            return cursor == 0;
+            return !iterated;
         }
 
         @Override
         public E next() {
             if(!hasNext()) throw new NoSuchElementException();
-            cursor++;
-            return (E) this.element;
+            iterated = true;
+            return this.element;
         }
     }
 }
