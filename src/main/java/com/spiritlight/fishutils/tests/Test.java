@@ -1,6 +1,7 @@
 package com.spiritlight.fishutils.tests;
 
 import com.spiritlight.fishutils.misc.ThrowingRunnable;
+import com.spiritlight.fishutils.misc.ThrowingSupplier;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,42 +14,23 @@ import java.util.Objects;
  */
 public class Test<T> implements TestComponent<T> {
     private Object value;
-    private final Object target;
-    private final Method invocationTarget;
     private String lastMessage;
     private boolean lastSuccess;
+    private final ThrowingSupplier<T> action;
     private Throwable lastThrowable;
 
-    public Test(Object target, Class<?> clazz, String method) {
-        try {
-            this.target = target;
-            this.invocationTarget = clazz.getDeclaredMethod(method);
-            invocationTarget.setAccessible(true);
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException("unable to access method", ex);
-        }
-    }
-
-    public Test(Class<?> clazz, String method) {
-        try {
-            this.target = clazz.getConstructor().newInstance();
-            this.invocationTarget = clazz.getDeclaredMethod(method);
-            invocationTarget.setAccessible(true);
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException("unable to access default constructor or method", ex);
-        }
+    public Test(ThrowingSupplier<T> action) {
+        this.action = action;
+        this.run();
     }
 
     @Override
     public TestComponent<T> run(Object... args) {
         try {
-            this.value = invocationTarget.invoke(target, args);
-        } catch (IllegalAccessException iae) {
-            throw new RuntimeException(iae);
-        } catch (InvocationTargetException ex) {
-            this.lastThrowable = ex.getCause();
-            this.lastSuccess = false;
-            this.lastMessage = ex.getCause().getMessage();
+            this.value = action.get();
+        } catch (Throwable t) {
+            this.lastMessage = t.getMessage();
+            this.lastThrowable = t;
         }
         return this;
     }
@@ -80,7 +62,7 @@ public class Test<T> implements TestComponent<T> {
         throw new RuntimeException(message == null ? "not larger" : toString(message));
     }
 
-    @Override
+    @Override @SuppressWarnings({"rawtypes", "unchecked"})
     public TestComponent<T> lesser(Comparable<T> other, String... message) {
         if(this.value instanceof Comparable cmp) {
             int val = cmp.compareTo(other);
@@ -102,6 +84,13 @@ public class Test<T> implements TestComponent<T> {
             }
         }
         throw new RuntimeException("Expected " + clazz.getSimpleName() + ", got nothing");
+    }
+
+    public long getExecutionTime() {
+        long l = System.currentTimeMillis();
+        action.getUnchecked();
+        long l2 = System.currentTimeMillis();
+        return l2 - l;
     }
 
     private void throwIfPresent() {
