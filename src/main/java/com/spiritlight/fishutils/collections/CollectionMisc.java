@@ -1,5 +1,7 @@
 package com.spiritlight.fishutils.collections;
 
+import com.spiritlight.fishutils.misc.Beta;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,6 +16,7 @@ public class CollectionMisc {
      * a collection is completely sorted, it returns 0,
      * otherwise, returns the tendency of this collection
      */
+    @Beta
     public static <T extends Comparable<T>> int noiseOf(Collection<T> collection) {
         Set<T> set = collection.stream().sorted().collect(Collectors.toCollection(LinkedHashSet::new));
 
