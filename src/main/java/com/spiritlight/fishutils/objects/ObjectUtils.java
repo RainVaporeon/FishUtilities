@@ -45,4 +45,18 @@ public class ObjectUtils {
         long now = System.currentTimeMillis();
         return Pair.of(r, now - curr);
     }
+
+    /**
+     * Evaluates the time taken to run this function
+     * @param function The supplier to run
+     * @return A Pair with the key being the returned value, and value being the
+     * time elapsed executing this function
+     * @param <R> return type
+     */
+    public static <R> Pair<R, Long> evaluateNanos(Supplier<R> function) {
+        long curr = System.nanoTime();
+        R r = function.get();
+        long now = System.nanoTime();
+        return Pair.of(r, now - curr);
+    }
 }
