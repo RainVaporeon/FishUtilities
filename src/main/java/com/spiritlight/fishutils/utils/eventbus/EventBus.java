@@ -89,26 +89,47 @@ public class EventBus {
     }
 
     private static void fire(Object o, Event event) {
+        EventBusSubscriber a; Class<?> c;
         for(Method method : o.getClass().getDeclaredMethods()) {
-            if(method.isAnnotationPresent(EventBusSubscriber.class) &&
+            if((a = method.getAnnotation(EventBusSubscriber.class)) != null &&
                method.getParameterCount() == 1 &&
-               method.getParameterTypes()[0].isAssignableFrom(event.getClass())) {
+               method.getParameterTypes()[0].isAssignableFrom((c = event.getClass()))) {
                 method.setAccessible(true);
-                ActionResult.tryAction(() -> method.invoke(o, event));
+                if(a.value().length == 0) {
+                    ActionResult.tryAction(() -> method.invoke(o, event));
+                } else {
+                    for(Class<?> clazz : a.value()) {
+                        if(clazz.isAssignableFrom(c)) {
+                            ActionResult.tryAction(() -> method.invoke(o, event));
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
 
     private static void check(Object o) {
-        Class<?> c; int cnt;
+        EventBusSubscriber a; Class<?> c; int cnt;
         for(Method method : o.getClass().getDeclaredMethods()) {
-            if(method.isAnnotationPresent(EventBusSubscriber.class)) {
+            if((a = method.getAnnotation(EventBusSubscriber.class)) != null) {
+                // only one parameter for a listening method
                 if((cnt = method.getParameterCount()) != 1) {
                     throw new InvalidSubscriberException("annotated method " + method + " has " + cnt + " parameters, expected 1");
                 }
 
                 if(Event.class.isAssignableFrom((c = method.getParameterTypes()[0]))) {
-                    return; // yay!!! we found one
+                    for(Class<?> clazz : a.value()) {
+                        // parameter is not event
+                        if(!Event.class.isAssignableFrom(clazz)) {
+                            throw new InvalidSubscriberException("class " + clazz + " in annotated member " + method + " is not an event type");
+                        }
+                        // listening to other classes other than parent is a no no
+                        if(!c.isAssignableFrom(clazz)) {
+                            throw new InvalidSubscriberException("class " + clazz + " is incompatible for listening event type " + c);
+                        }
+                    }
+                    return; // yay!!! we found one, this qualifies as a subscriber then
                 } else {
                     throw new InvalidSubscriberException("class " + c + " is not an instance of Event");
                 }

@@ -10,8 +10,17 @@ import java.lang.annotation.Target;
  * <p></p>
  * The annotated method must have only one parameter, and it
  * should extend from the {@link Event} class.
+ * @see EventBusSubscriber#value()
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface EventBusSubscriber {
+    /**
+     * The event class this method is interested in
+     * @return the classes and subclasses this event may
+     * be interested in
+     * @apiNote if this field is set, the bus will only fire
+     * events of the provided classes to the method
+     */
+    Class<? extends Event>[] value() default {};
 }
