@@ -2,6 +2,7 @@ package com.spiritlight.fishutils.utils.eventbus;
 
 import com.spiritlight.fishutils.action.ActionResult;
 import com.spiritlight.fishutils.utils.eventbus.events.Event;
+import com.spiritlight.fishutils.utils.eventbus.events.EventBusAccessor;
 import com.spiritlight.fishutils.utils.eventbus.events.EventBusSubscriber;
 
 import java.lang.reflect.Method;
@@ -33,16 +34,28 @@ public class EventBus {
     private final Set<EventBus> inheritances = new CopyOnWriteArraySet<>();
 
     /**
+     * whether the bus should be able to receive the same event
+     * multiple times. If this is {@code false}, this bus will
+     * not write a signature to the event.
+     */
+    private final boolean processMulti;
+
+    /**
      * The shared event bus instance
      */
     public static final EventBus INSTANCE = new EventBus();
 
-    public EventBus() {
+    public EventBus(boolean processMulti) {
         UUID identifier;
         // Keeps fetching until there are no duplicating identifier.
         while(registeredInstances.contains((identifier = UUID.randomUUID())));
         registeredInstances.add(identifier);
         this.identifier = identifier;
+        this.processMulti = processMulti;
+    }
+
+    public EventBus() {
+        this(false);
     }
 
     public void subscribe(Object object) throws InvalidSubscriberException {
@@ -69,8 +82,8 @@ public class EventBus {
      * receive every event the parent receives.
      */
     public void inherit(EventBus parent) {
-        recursionCheck(parent);
         if(parent == this) throw new IllegalStateException("cannot inherit from self");
+        recursionCheck(Objects.requireNonNull(parent) /* Implicit null check */);
         parent.inheritances.add(this);
     }
 
@@ -79,13 +92,18 @@ public class EventBus {
     }
 
     public void fire(Event event) {
+        if(!this.processMulti) {
+            EventBusAccessor accessor = Secret.getAccessor();
+            if(accessor.signed(event, identifier)) return;
+            accessor.sign(event, identifier);
+        }
         subscribers.forEach(s -> fire(s, event));
         inheritances.forEach(bus -> bus.fire(event));
     }
 
     private void recursionCheck(EventBus parent) {
         if(this.inheritances.contains(parent)) throw new IllegalStateException("recursive inheritance");
-        parent.inheritances.forEach(this::recursionCheck);
+        this.inheritances.forEach(this::recursionCheck);
     }
 
     private static void fire(Object o, Event event) {
