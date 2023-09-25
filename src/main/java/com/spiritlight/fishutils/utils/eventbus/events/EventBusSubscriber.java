@@ -17,10 +17,19 @@ import java.lang.annotation.Target;
 public @interface EventBusSubscriber {
     /**
      * The event class this method is interested in
-     * @return the classes and subclasses this event may
+     * @return the classes and subclasses this method may
      * be interested in
      * @apiNote if this field is set, the bus will only fire
      * events of the provided classes to the method
      */
     Class<? extends Event>[] value() default {};
+
+    /**
+     * The event class this method is exclusively interested in
+     * @return the classes this method may be interested in
+     * @apiNote this field denotes a list of classes this listening method
+     * can receive, unlike value, this one listens to only these classes and
+     * not subclasses of them.
+     */
+    Class<? extends Event>[] only() default {};
 }

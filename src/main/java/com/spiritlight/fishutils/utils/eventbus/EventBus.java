@@ -91,6 +91,7 @@ public class EventBus {
     private static void fire(Object o, Event event) {
         EventBusSubscriber a; Class<?> c;
         for(Method method : o.getClass().getDeclaredMethods()) {
+            condition:
             if((a = method.getAnnotation(EventBusSubscriber.class)) != null &&
                method.getParameterCount() == 1 &&
                method.getParameterTypes()[0].isAssignableFrom((c = event.getClass()))) {
@@ -98,10 +99,16 @@ public class EventBus {
                 if(a.value().length == 0) {
                     ActionResult.tryAction(() -> method.invoke(o, event));
                 } else {
+                    for(Class<?> clazz : a.only()) {
+                        if(clazz == c) {
+                            ActionResult.tryAction(() -> method.invoke(o, event));
+                            break condition;
+                        }
+                    }
                     for(Class<?> clazz : a.value()) {
                         if(clazz.isAssignableFrom(c)) {
                             ActionResult.tryAction(() -> method.invoke(o, event));
-                            break;
+                            break condition;
                         }
                     }
                 }
@@ -120,6 +127,16 @@ public class EventBus {
 
                 if(Event.class.isAssignableFrom((c = method.getParameterTypes()[0]))) {
                     for(Class<?> clazz : a.value()) {
+                        // parameter is not event
+                        if(!Event.class.isAssignableFrom(clazz)) {
+                            throw new InvalidSubscriberException("class " + clazz + " in annotated member " + method + " is not an event type");
+                        }
+                        // listening to other classes other than parent is a no no
+                        if(!c.isAssignableFrom(clazz)) {
+                            throw new InvalidSubscriberException("class " + clazz + " is incompatible for listening event type " + c);
+                        }
+                    }
+                    for(Class<?> clazz : a.only()) {
                         // parameter is not event
                         if(!Event.class.isAssignableFrom(clazz)) {
                             throw new InvalidSubscriberException("class " + clazz + " in annotated member " + method + " is not an event type");
