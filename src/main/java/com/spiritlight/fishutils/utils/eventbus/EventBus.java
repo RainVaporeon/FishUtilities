@@ -38,20 +38,32 @@ public class EventBus {
      * multiple times. If this is {@code false}, this bus will
      * not write a signature to the event.
      */
-    private final boolean processMulti;
+    private final boolean processDuplicates;
 
     /**
      * The shared event bus instance
      */
     public static final EventBus INSTANCE = new EventBus();
 
-    public EventBus(boolean processMulti) {
+    /**
+     * Creates an event bus
+     * @param processDuplicates whether this bus should be able to
+     *                     receive the same event multiple times
+     * @apiNote "same event" in this context does not indicate that
+     * for event a and b, if {@code a.equals(b)} returns true, the
+     * event is discarded, but rather if {@code a == b} is true,
+     * the event is discarded.
+     * In other words, the event is discarded if and only if {@code processDuplicates}
+     * is set to false (default) and if the two events have identical identity.
+     */
+    public EventBus(boolean processDuplicates) {
         UUID identifier;
         // Keeps fetching until there are no duplicating identifier.
+        //noinspection StatementWithEmptyBody
         while(registeredInstances.contains((identifier = UUID.randomUUID())));
         registeredInstances.add(identifier);
         this.identifier = identifier;
-        this.processMulti = processMulti;
+        this.processDuplicates = processDuplicates;
     }
 
     public EventBus() {
@@ -68,7 +80,7 @@ public class EventBus {
     }
 
     /**
-     * Inherits this event bus from a certain parent, listening
+     * Hooks this event bus to a certain parent, listening
      * to all events from the said parent.
      * <p></p>
      * This method does a deep recursion check to see whether
@@ -79,9 +91,12 @@ public class EventBus {
      * @apiNote This will add the current bus instance to the
      * parent's inheritance set, in which is called every time
      * the parent fires an event. In other words, this bus will
-     * receive every event the parent receives.
+     * receive every event the parent receives. In some structures,
+     * the event may be received multiple times. If this is intended,
+     * the event bus should be created with {@link EventBus#EventBus(boolean)}}
+     * and with "processMulti" set to true.
      */
-    public void inherit(EventBus parent) {
+    public void hook(EventBus parent) {
         if(parent == this) throw new IllegalStateException("cannot inherit from self");
         recursionCheck(Objects.requireNonNull(parent) /* Implicit null check */);
         parent.inheritances.add(this);
@@ -92,7 +107,7 @@ public class EventBus {
     }
 
     public void fire(Event event) {
-        if(!this.processMulti) {
+        if(!this.processDuplicates) {
             EventBusAccessor accessor = Secret.getAccessor();
             if(accessor.signed(event, identifier)) return;
             accessor.sign(event, identifier);
@@ -108,24 +123,34 @@ public class EventBus {
 
     private static void fire(Object o, Event event) {
         EventBusSubscriber a; Class<?> c;
-        for(Method method : o.getClass().getDeclaredMethods()) {
+        Method[] methods;
+        Object invocationTarget;
+        if(o instanceof Class<?> cls) {
+            invocationTarget = null;
+            methods = cls.getMethods();
+        } else {
+            invocationTarget = o;
+            methods = o.getClass().getDeclaredMethods();
+        }
+
+        for(Method method : methods) {
             condition:
             if((a = method.getAnnotation(EventBusSubscriber.class)) != null &&
                method.getParameterCount() == 1 &&
                method.getParameterTypes()[0].isAssignableFrom((c = event.getClass()))) {
                 method.setAccessible(true);
-                if(a.value().length == 0) {
-                    ActionResult.tryAction(() -> method.invoke(o, event));
+                if(a.value().length == 0 && a.only().length == 0) {
+                    ActionResult.tryAction(() -> method.invoke(invocationTarget, event));
                 } else {
                     for(Class<?> clazz : a.only()) {
                         if(clazz == c) {
-                            ActionResult.tryAction(() -> method.invoke(o, event));
+                            ActionResult.tryAction(() -> method.invoke(invocationTarget, event));
                             break condition;
                         }
                     }
                     for(Class<?> clazz : a.value()) {
                         if(clazz.isAssignableFrom(c)) {
-                            ActionResult.tryAction(() -> method.invoke(o, event));
+                            ActionResult.tryAction(() -> method.invoke(invocationTarget, event));
                             break condition;
                         }
                     }
@@ -136,7 +161,8 @@ public class EventBus {
 
     private static void check(Object o) {
         EventBusSubscriber a; Class<?> c; int cnt;
-        for(Method method : o.getClass().getDeclaredMethods()) {
+        Method[] methods = o instanceof Class<?> ? ((Class<?>) o).getMethods() : o.getClass().getDeclaredMethods();
+        for(Method method : methods) {
             if((a = method.getAnnotation(EventBusSubscriber.class)) != null) {
                 // only one parameter for a listening method
                 if((cnt = method.getParameterCount()) != 1) {

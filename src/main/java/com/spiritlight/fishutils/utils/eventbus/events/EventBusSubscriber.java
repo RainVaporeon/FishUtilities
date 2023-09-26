@@ -10,6 +10,9 @@ import java.lang.annotation.Target;
  * <p></p>
  * The annotated method must have only one parameter, and it
  * should extend from the {@link Event} class.
+ * @apiNote If the annotated method has the {@code static} modifier,
+ * then that method has to be {@code public}, otherwise the bus
+ * will not find the method.
  * @see EventBusSubscriber#value()
  */
 @Retention(RetentionPolicy.RUNTIME)
