@@ -29,10 +29,10 @@ public class Numbers {
     }
 
     public static boolean in(long val, long min, long max) {
-        return val >= min && val < max;
+        return val >= min && val <= max;
     }
 
     public static boolean in(double val, double min, double max) {
-        return val >= min && val < max;
+        return val >= min && val <= max;
     }
 }

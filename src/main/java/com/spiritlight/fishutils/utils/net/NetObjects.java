@@ -1,5 +1,7 @@
 package com.spiritlight.fishutils.utils.net;
 
+import com.spiritlight.fishutils.math.Numbers;
+
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketAddress;
@@ -33,7 +35,7 @@ public class NetObjects {
      * @param ip the ip of the proxy
      * @return the proxy
      */
-    public static Proxy createProxy(Proxy.Type type, String ip) {
+    public static Proxy createProxy(Proxy.Type type, String ip) throws ParseException {
         return new Proxy(type, createAddress(ip));
     }
 
@@ -43,13 +45,20 @@ public class NetObjects {
      * @param ip the ip
      * @return the created address
      */
-    public static SocketAddress createAddress(String ip) {
-        if(ip.contains(":")) {
-            String[] s = ip.split(":");
-            int port = Integer.parseInt(s[1]);
-            return createAddress(s[0], port);
+    public static SocketAddress createAddress(String ip) throws ParseException {
+        try {
+            if(ip.contains(":")) {
+                String[] s = ip.split(":");
+                int port = Integer.parseInt(s[1]);
+                if(!Numbers.in(port, 0, 65353)) {
+                    throw new ParseException();
+                }
+                return createAddress(s[0], port);
+            }
+            return createAddress(ip, 80);
+        } catch (Exception ex) {
+            throw new ParseException("for input string: " + ip);
         }
-        return createAddress(ip, 80);
     }
 
     /**
