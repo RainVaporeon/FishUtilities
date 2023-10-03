@@ -50,7 +50,7 @@ public class NetObjects {
             if(ip.contains(":")) {
                 String[] s = ip.split(":");
                 int port = Integer.parseInt(s[1]);
-                if(!Numbers.in(port, 0, 65353)) {
+                if(!Numbers.in(port, 0, 65536)) {
                     throw new ParseException();
                 }
                 return createAddress(s[0], port);
