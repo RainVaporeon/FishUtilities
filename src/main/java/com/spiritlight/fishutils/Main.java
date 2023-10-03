@@ -1,11 +1,6 @@
 package com.spiritlight.fishutils;
 
-import com.spiritlight.fishutils.utils.eventbus.EventBus;
-import com.spiritlight.fishutils.utils.eventbus.events.Event;
-import com.spiritlight.fishutils.utils.eventbus.events.EventBusSubscriber;
-import com.spiritlight.fishutils.utils.secure.SeededGenerator;
-
-import java.util.function.Consumer;
+import com.spiritlight.fishutils.random.WeightedRandom;
 
 /**
  * where i test dumb stuffs
@@ -14,9 +9,12 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            EventBus.INSTANCE.subscribe(Main.class);
-            EventBus.INSTANCE.fire(new Event() {
-            });
+            WeightedRandom<String> random = new WeightedRandom<>();
+            random.addObject("Emmy", 1);
+            random.addObject("Desgracia", 49);
+            random.addObject("Beta Feesh", 1);
+            random.addObject("Angel", 49);
+            System.out.println(random.getNext());
         } catch (Throwable t) {
             t.printStackTrace();
         }

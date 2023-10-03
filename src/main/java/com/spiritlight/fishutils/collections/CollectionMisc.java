@@ -1,6 +1,6 @@
 package com.spiritlight.fishutils.collections;
 
-import com.spiritlight.fishutils.misc.Beta;
+import com.spiritlight.fishutils.misc.annotations.Beta;
 
 import java.util.*;
 import java.util.stream.Collectors;

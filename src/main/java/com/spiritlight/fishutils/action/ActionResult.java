@@ -32,9 +32,10 @@ public class ActionResult<T> implements Action<T> {
     // Shared default value
     private static final ActionResult<?> DEFAULT_SUCCESS = new ActionResult<>(Result.SUCCESS, null);
 
-    private final Result result; // The result (non-null)
-    private final T returnValue; // Holding value (nullable)
-    private final Throwable throwable; // Exception (null if successful)
+    // 1.2: Weakened visibility (priv -> prot)
+    protected final Result result; // The result (non-null)
+    protected final T returnValue; // Holding value (nullable)
+    protected final Throwable throwable; // Exception (null if successful)
     private boolean exceptionHandled; // Exception handled (@throws throwable if false and throwable != null)
 
     /**

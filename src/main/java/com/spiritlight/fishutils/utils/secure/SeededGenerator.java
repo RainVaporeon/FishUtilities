@@ -63,6 +63,11 @@ public class SeededGenerator {
         this.setSeed(genSeed(seed));
     }
 
+    /**
+     * Refreshes the seed of this generator, the process is independent on
+     * current seed value, therefore is unable to provide a consistent
+     * output value
+     */
     public void refreshSeed() {
         this.setSeed(System.nanoTime());
     }

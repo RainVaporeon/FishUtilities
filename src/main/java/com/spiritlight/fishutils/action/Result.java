@@ -25,5 +25,16 @@ public enum Result {
      * This sort of result usually provides further information to provide
      * insight on the cause.
      */
-    FAIL
+    FAIL,
+    /**
+     * Indicating that this action has completed
+     * @since 1.2
+     */
+    COMPLETED,
+    /**
+     * Indicating that this action is still incomplete, or is waiting for some
+     * sort of re-assignment. This kind of result usually indicates that the caller
+     * should re-check the state after a while as it may change at a later time.
+     */
+    INCOMPLETE
 }

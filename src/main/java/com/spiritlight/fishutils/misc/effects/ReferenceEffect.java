@@ -10,6 +10,7 @@ import java.util.function.Consumer;
  */
 public class ReferenceEffect<T> implements Effect<T> {
     protected final List<Consumer<T>> listeners = new ArrayList<>();
+    private final Object mutex = new Object();
     protected T value;
 
     ReferenceEffect(T value) {
@@ -29,18 +30,22 @@ public class ReferenceEffect<T> implements Effect<T> {
 
     @Override
     public boolean addListener(Consumer<T> listener) {
-        return listeners.add(listener);
+        synchronized (mutex) {
+            return listeners.add(listener);
+        }
     }
 
     @Override
     public boolean removeListener(Consumer<T> consumer) {
-        return listeners.remove(consumer);
+        synchronized (mutex) {
+            return listeners.remove(consumer);
+        }
     }
 
     @Override
     public void onUpdate(T value) {
-        for(Consumer<T> listener : this.listeners) {
-            listener.accept(value);
+        synchronized (mutex) {
+            this.listeners.forEach(ls -> ls.accept(value));
         }
     }
 }
