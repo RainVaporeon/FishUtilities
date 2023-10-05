@@ -196,7 +196,8 @@ public class EventBus {
                 }
             }
         }
-        throw new InvalidSubscriberException("class " + o.getClass() + " does not have any subscriber methods");
+        // Deprecated since 1.2
+        // throw new InvalidSubscriberException("class " + o.getClass() + " does not have any subscriber methods");
     }
 
     @Override
