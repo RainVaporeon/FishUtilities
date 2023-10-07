@@ -13,8 +13,8 @@ import java.util.function.Function;
 /*
 * INTERNAL CHANGELOG:
 * 1.1.1: All references to returnValue are now retrieved with the getter.
-
- */
+* 1.2.3: All internal fields are exposed to inheritors for extension purposes.
+*/
 /**
  * An object representing the execution status of an action. This is bundled
  * with a {@link Result} denoting the execution result, and can hold a return value
@@ -26,6 +26,8 @@ import java.util.function.Function;
  * @param <T> The return type
  * @apiNote This object is not meant to be serialized, and only recommended to be used as
  * return values for simplifying handling the result of executing something.
+ * @since 1.0
+ * @author Rain
  */
 public class ActionResult<T> implements Action<T> {
 
@@ -33,9 +35,10 @@ public class ActionResult<T> implements Action<T> {
     private static final ActionResult<?> DEFAULT_SUCCESS = new ActionResult<>(Result.SUCCESS, null);
 
     // 1.2: Weakened visibility (priv -> prot)
-    protected final Result result; // The result (non-null)
-    protected final T returnValue; // Holding value (nullable)
-    protected final Throwable throwable; // Exception (null if successful)
+    // 1.2.3: Removed final modifier in favor of completion stages
+    protected Result result; // The result (non-null)
+    protected T returnValue; // Holding value (nullable)
+    protected Throwable throwable; // Exception (null if successful)
     private boolean exceptionHandled; // Exception handled (@throws throwable if false and throwable != null)
 
     /**
