@@ -1,7 +1,6 @@
 package com.spiritlight.fishutils.action;
 
 import com.spiritlight.fishutils.collections.Pair;
-import com.spiritlight.fishutils.logging.ILogger;
 import com.spiritlight.fishutils.misc.ThrowingRunnable;
 import com.spiritlight.fishutils.misc.ThrowingSupplier;
 
@@ -12,7 +11,7 @@ import java.util.function.Function;
 
 /*
 * INTERNAL CHANGELOG:
-* 1.1.1: All references to returnValue is now retrieved with the getter.
+* 1.1.1: All references to returnValue are now retrieved with the getter.
 
  */
 /**
@@ -52,7 +51,7 @@ public class ActionResult<T> implements Action<T> {
     }
 
     /**
-     * Creates a new ActionResult holding the result and a return value, the throwable is null in this case
+     * Creates a new ActionResult holding the result and a return value; the throwable is null in this case
      * @param result The result
      * @param returnValue The return value
      */
@@ -61,7 +60,7 @@ public class ActionResult<T> implements Action<T> {
     }
 
     /**
-     * Creates a new ActionResult holding the result and a throwable, the return value is null in this case
+     * Creates a new ActionResult holding the result and a throwable; the return value is null in this case
      * @param result The result
      * @param throwable The return value
      */
@@ -70,6 +69,7 @@ public class ActionResult<T> implements Action<T> {
     }
 
     // 1.1: Returns itself instead
+    // 1.2.1: rename: consume -> thenAccept
     /**
      * Accepts this result's returned value
      * @param consumer the consumer to handle the value
@@ -77,7 +77,7 @@ public class ActionResult<T> implements Action<T> {
      * @apiNote if execution fails, the returned ActionResult still will hold this object's
      * return value.
      */
-    public ActionResult<T> consume(Consumer<T> consumer) {
+    public ActionResult<T> thenAccept(Consumer<T> consumer) {
         try {
             consumer.accept(this.getReturnValue());
             return this;
@@ -101,7 +101,29 @@ public class ActionResult<T> implements Action<T> {
     }
 
     /**
-     * Handles the exception, if any is present.
+     * Transforms the return value to another if the last operation is successful.
+     * @param transformer the mapper
+     * @return transformed value if it is previously successful, otherwise itself
+     * @since 1.2.1
+     */
+    public ActionResult<T> applyIfSuccessful(Function<T, T> transformer) {
+        if(result == Result.SUCCESS) return this.map(transformer);
+        return this;
+    }
+
+    /**
+     * Transforms the return value to another if the last operation is failed.
+     * @param transformer the mapper
+     * @return transformed value if it is previously successful, otherwise itself
+     * @since 1.2.1
+     */
+    public ActionResult<T> applyIfFailed(Function<T, T> transformer) {
+        if(result != Result.SUCCESS) return this.map(transformer);
+        return this;
+    }
+
+    /**
+     * Handles the exception if any is present.
      * @param type The type of exception to expect
      * @param action the handler for the exception
      * @return the same ActionResult for chaining purposes
@@ -123,14 +145,19 @@ public class ActionResult<T> implements Action<T> {
     /**
      * Handles the exception and produces a new value
      * @param type The type of exception to expect
-     * @param handler The handler to execute, if this type is expected
+     * @param handler The handler to execute if this type is expected
      * @return the same ActionResult for chaining purposes, or a new one specified by the handler
      * @param <X> The exception type
      */
     public <X extends Throwable> ActionResult<T> expect(Class<X> type, Function<X, T> handler) {
         if(this.throwable == null) return this;
         if(type.isAssignableFrom(this.throwable.getClass())) {
-            return ActionResult.success(handler.apply((X) this.throwable));
+            try {
+                T t = handler.apply((X) this.throwable);
+                return ActionResult.success(t);
+            } catch (Throwable t) {
+                return ActionResult.fail(t);
+            }
         }
         return this;
     }
@@ -152,7 +179,7 @@ public class ActionResult<T> implements Action<T> {
     }
 
     /**
-     * Gets the throwable, if any is present
+     * Gets the throwable if any is present
      * @return the throwable
      * @apiNote if this method is called, it's assumed that
      * the exception is handled, and therefore any future calls of
@@ -221,7 +248,7 @@ public class ActionResult<T> implements Action<T> {
     /**
      * Throws the exception if the provided type is caught
      * @param type The type of exception
-     * @return itself for chaining purposes, if no such exception exist
+     * @return itself for chaining purposes, if no such exception exists
      * @param <X> The exception type
      * @throws X The exception
      */
@@ -247,7 +274,7 @@ public class ActionResult<T> implements Action<T> {
 
     /**
      * Throws the exception if any is present
-     * @return itself for chaining purposes, if no such exception exist
+     * @return itself for chaining purposes, if no such exception exists
      * @throws Throwable if one is present, regardless whether it has been handled.
      * @see ActionResult#throwIf(Class)
      */
@@ -297,7 +324,21 @@ public class ActionResult<T> implements Action<T> {
         return new ActionResult<>(Result.FAIL, getDefaultException());
     }
 
-    // note: If throwable is not null it used to return FAIL here, if something breaks,
+    /**
+     * Convenience method to create an action result
+     * @param element the element
+     * @param throwable the throwable, nullable
+     * @return the action result
+     * @param <T> action type
+     * @since 1.2.1
+     */
+    public static <T> ActionResult<T> of(T element, Throwable throwable) {
+        if(element == null && throwable == null) return success();
+        if(element == null) return fail(throwable);
+        return success(element);
+    }
+
+    // note: If throwable is not null, it used to return FAIL here, if something breaks,
     // this should be the first thing to check out.
 
     // right as of version 1.1, null-supplied fail no longer fetches
@@ -305,7 +346,7 @@ public class ActionResult<T> implements Action<T> {
     /**
      * Convenience method to create an ActionResult with the provided
      * throwable as the exception.
-     * @param throwable The throwable, can be null
+     * @param throwable The throwable, nullable.
      * @return An ActionResult holding {@link Result#FAIL}, or {@link Result#ERROR}
      * if throwable is not null
      */
@@ -320,7 +361,7 @@ public class ActionResult<T> implements Action<T> {
      * @return a success action with the value if no exceptions occurred,
      * otherwise return a failed action with the exception
      */
-    public static <T> ActionResult<T> tryAction(ThrowingSupplier<T> action) {
+    public static <T> ActionResult<T> run(ThrowingSupplier<T> action) {
         try {
             return new ActionResult<>(Result.SUCCESS, action.get());
         } catch (Throwable e) {
@@ -334,7 +375,7 @@ public class ActionResult<T> implements Action<T> {
      * @return an action holding the result and value if no exceptions occurred,
      * otherwise return a failed action with the exception
      */
-    public static <T> ActionResult<T> tryAction(ResultRunnable<T> runnable) {
+    public static <T> ActionResult<T> run(ResultRunnable<T> runnable) {
         try {
             Pair<Result, T> pair = runnable.run();
             return new ActionResult<>(pair.getKey(), pair.getValue());
@@ -349,7 +390,7 @@ public class ActionResult<T> implements Action<T> {
      * @return a success action if no exceptions occurred,
      * otherwise return a failed action with the exception
      */
-    public static ActionResult<Void> tryAction(ThrowingRunnable runnable) {
+    public static ActionResult<Void> run(ThrowingRunnable runnable) {
         try {
             runnable.run();
             return ActionResult.success();

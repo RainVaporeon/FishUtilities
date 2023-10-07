@@ -140,17 +140,17 @@ public class EventBus {
                method.getParameterTypes()[0].isAssignableFrom((c = event.getClass()))) {
                 method.setAccessible(true);
                 if(a.value().length == 0 && a.only().length == 0) {
-                    ActionResult.tryAction(() -> method.invoke(invocationTarget, event));
+                    ActionResult.run(() -> method.invoke(invocationTarget, event));
                 } else {
                     for(Class<?> clazz : a.only()) {
                         if(clazz == c) {
-                            ActionResult.tryAction(() -> method.invoke(invocationTarget, event));
+                            ActionResult.run(() -> method.invoke(invocationTarget, event));
                             break condition;
                         }
                     }
                     for(Class<?> clazz : a.value()) {
                         if(clazz.isAssignableFrom(c)) {
-                            ActionResult.tryAction(() -> method.invoke(invocationTarget, event));
+                            ActionResult.run(() -> method.invoke(invocationTarget, event));
                             break condition;
                         }
                     }
