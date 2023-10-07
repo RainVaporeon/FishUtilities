@@ -127,7 +127,7 @@ public class ActionResult<T> implements Action<T> {
      * Transforms the return value to another depending on the result.
      * @param transformer the mapper
      * @return the transformed value
-     * @since 1.2.1
+     * @since 1.2.2
      */
     public ActionResult<T> apply(BiFunction<Result, T, T> transformer) {
         try {
