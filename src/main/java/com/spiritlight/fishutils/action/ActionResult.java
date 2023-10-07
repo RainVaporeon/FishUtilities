@@ -6,6 +6,7 @@ import com.spiritlight.fishutils.misc.ThrowingSupplier;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -120,6 +121,20 @@ public class ActionResult<T> implements Action<T> {
     public ActionResult<T> applyIfFailed(Function<T, T> transformer) {
         if(result != Result.SUCCESS) return this.map(transformer);
         return this;
+    }
+
+    /**
+     * Transforms the return value to another depending on the result.
+     * @param transformer the mapper
+     * @return the transformed value
+     * @since 1.2.1
+     */
+    public ActionResult<T> apply(BiFunction<Result, T, T> transformer) {
+        try {
+            return ActionResult.success(transformer.apply(this.result, this.getReturnValue()));
+        } catch (Throwable t) {
+            return ActionResult.fail(t);
+        }
     }
 
     /**
