@@ -83,12 +83,13 @@ public class SeededGenerator {
 
     private static long genSeed(Object in) {
         if(in == null) return 0;
-        String stringValue = in.toString();
+        String stringValue = String.valueOf(in);
         long value = 0;
-        for(byte b : stringValue.getBytes(StandardCharsets.UTF_8)) {
-            value += b | in.hashCode();
-            value ^= b;
+        for(char c : stringValue.toCharArray()) {
+            value += c | in.hashCode();
+            value ^= c;
         }
+        value *= String.valueOf(in).chars().sum();
         return value;
     }
 }
