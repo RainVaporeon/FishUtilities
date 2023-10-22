@@ -29,16 +29,18 @@ import java.util.function.Function;
  * @since 1.0
  * @author Rain
  */
-public class ActionResult<T> implements Action<T> {
+public final class ActionResult<T> implements Action<T> {
 
     // Shared default value
     private static final ActionResult<?> DEFAULT_SUCCESS = new ActionResult<>(Result.SUCCESS, null);
 
     // 1.2: Weakened visibility (priv -> prot)
     // 1.2.3: Removed final modifier in favor of completion stages
-    protected Result result; // The result (non-null)
-    protected T returnValue; // Holding value (nullable)
-    protected Throwable throwable; // Exception (null if successful)
+    // 1.2.4: Returned to be final and deprecated completion stages, made class final
+    // Note: CompletableFuture provides enough functionality so wrapping it is redundant.
+    private final Result result; // The result (non-null)
+    private final T returnValue; // Holding value (nullable)
+    private final Throwable throwable; // Exception (null if successful)
     private boolean exceptionHandled; // Exception handled (@throws throwable if false and throwable != null)
 
     /**
