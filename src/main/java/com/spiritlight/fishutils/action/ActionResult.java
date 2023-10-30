@@ -101,7 +101,15 @@ public final class ActionResult<T> implements Action<T> {
     public <R> ActionResult<R> map(Function<T, R> function) {
         try {
             return new ActionResult<>(Result.SUCCESS, function.apply(this.getReturnValue()));
-        } catch (Throwable t) {
+        } catch (Exception t) {
+            return new ActionResult<>(Result.ERROR, t);
+        }
+    }
+
+    public ActionResult<T> flatMap(Function<T, T> function) {
+        try {
+            return new ActionResult<>(Result.SUCCESS, function.apply(this.getReturnValue()));
+        } catch (Exception t) {
             return new ActionResult<>(Result.ERROR, t);
         }
     }
@@ -137,7 +145,7 @@ public final class ActionResult<T> implements Action<T> {
     public ActionResult<T> apply(BiFunction<Result, T, T> transformer) {
         try {
             return ActionResult.success(transformer.apply(this.result, this.getReturnValue()));
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return ActionResult.fail(t);
         }
     }
@@ -175,7 +183,7 @@ public final class ActionResult<T> implements Action<T> {
             try {
                 T t = handler.apply((X) this.throwable);
                 return ActionResult.success(t);
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 return ActionResult.fail(t);
             }
         }

@@ -17,18 +17,32 @@ public class SeededGenerator {
     public static final String NUMERICAL = "0123456789";
     public static final String ALPHABET_NUMERICAL = ALPHABETS + NUMERICAL;
     private final String allowedCharacters;
-    private final Supplier<Random> randomInst;
+    private final Supplier<? extends Random> randomInst;
     private long genSeed;
+    private final boolean allowModifications;
+
+    public static final SeededGenerator ALPHABET_ONLY = new SeededGenerator(ALPHABETS);
+    public static final SeededGenerator NUMERICS_ONLY = new SeededGenerator(NUMERICAL);
+    public static final SeededGenerator ALPHABET_NUMERICS = new SeededGenerator(ALPHABET_NUMERICAL);
 
     public SeededGenerator(String allowedCharacters) {
         this(allowedCharacters, Secure.NO);
     }
 
     public SeededGenerator(String allowedCharacters, Secure secure) {
+        this(allowedCharacters, secure, null);
+    }
+
+    public SeededGenerator(String allowedCharacters, Secure secure, Supplier<? extends Random> randomSupplier) {
+        this(allowedCharacters, secure, randomSupplier, true);
+    }
+
+    public SeededGenerator(String allowedCharacters, Secure secure, Supplier<? extends Random> randomSupplier, boolean allowModifications) {
         this.allowedCharacters = allowedCharacters;
         this.genSeed = System.nanoTime();
-        this.randomInst = secure == YES ? () -> new SecureRandom(Numbers.getBytes(this.getSeed()))
-                : () -> new Random(this.getSeed());
+        this.randomInst = randomSupplier == null ? (secure == YES ? () -> new SecureRandom(Numbers.getBytes(this.getSeed()))
+                : () -> new Random(this.getSeed())) : randomSupplier;
+        this.allowModifications = allowModifications;
     }
 
     public String generate(int size) {
@@ -36,6 +50,10 @@ public class SeededGenerator {
                 .limit(size)
                 .boxed()
                 .collect(StringCollectors.concat());
+    }
+
+    public boolean allowModifications() {
+        return allowModifications;
     }
 
     public IntStream generate() {
