@@ -1,15 +1,9 @@
 package com.spiritlight.fishutils;
 
-import com.spiritlight.fishutils.misc.FieldLookup;
 import com.spiritlight.fishutils.utils.secure.SeededGenerator;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
 
 /**
  * where i test dumb stuffs

@@ -26,6 +26,9 @@ public class Logger implements ILogger {
 
     private final SimpleDateFormat format;
 
+    // 1.2.6: Logger enhancements
+    private PrintStream stream;
+
     public Logger(String name) {
         this(name, null);
     }
@@ -35,10 +38,15 @@ public class Logger implements ILogger {
     }
 
     public Logger(String name, File out, SimpleDateFormat dateFormat) {
+        this(name, out, dateFormat, null);
+    }
+
+    public Logger(String name, File out, SimpleDateFormat dateFormat, PrintStream stream) {
         this.name = name;
         this.out = LogInternals.getSharedObjectIfPresent(out);
         this.format = Objects.requireNonNull(dateFormat);
         this.creator = Thread.currentThread();
+        this.stream = stream == null ? System.out : stream;
 
         LogInternals.appendFileIfAbsent(out);
     }
@@ -57,22 +65,30 @@ public class Logger implements ILogger {
         }
     }
 
+    /**
+     * Sets the output stream source
+     * @param stream the stream
+     */
+    public void setOutputStream(PrintStream stream) {
+        this.stream = stream;
+    }
+
     public void log(Severity severity, String message, Throwable t) {
 
-        System.out.println("[" + name + "] " + severity + message + RESET);
+        stream.println("[" + name + "] " + severity + message + RESET);
 
         if(out != null)
             writeLog("[" + name + "] " + severity + ": " + message);
         if (t != null) {
-            System.out.print(severity);
+            stream.print(severity);
             t.printStackTrace();
-            System.out.println(RESET);
+            stream.println(RESET);
             if(out != null)
                 writeError(t);
         }
     }
 
-    // Convenience methods to log with severity and all those lame things
+    // Convenience methods to log with severity and all those boring things,
     // Although these are "convenience methods", the logging method was
     // written the last.
 
@@ -175,7 +191,7 @@ public class Logger implements ILogger {
                 newline(out.toPath());
                 t.printStackTrace(stream);
             } catch (FileNotFoundException e) {
-                System.err.println("Cannot write to error: ");
+                stream.println("Cannot write to error: ");
                 e.printStackTrace();
             }
         }

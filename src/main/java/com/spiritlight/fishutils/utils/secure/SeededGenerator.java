@@ -21,9 +21,9 @@ public class SeededGenerator {
     private long genSeed;
     private final boolean allowModifications;
 
-    public static final SeededGenerator ALPHABET_ONLY = new SeededGenerator(ALPHABETS);
-    public static final SeededGenerator NUMERICS_ONLY = new SeededGenerator(NUMERICAL);
-    public static final SeededGenerator ALPHABET_NUMERICS = new SeededGenerator(ALPHABET_NUMERICAL);
+    public static final SeededGenerator ALPHABET_ONLY = new SeededGenerator(ALPHABETS, YES, null, false);
+    public static final SeededGenerator NUMERICS_ONLY = new SeededGenerator(NUMERICAL, YES, null, false);
+    public static final SeededGenerator ALPHABET_NUMERICS = new SeededGenerator(ALPHABET_NUMERICAL, YES, null, false);
 
     public SeededGenerator(String allowedCharacters) {
         this(allowedCharacters, Secure.NO);
@@ -66,6 +66,7 @@ public class SeededGenerator {
      * XOR-s the current seed
      */
     public void addNoise(long noise) {
+        if(!allowModifications) throw new UnsupportedOperationException("Modifications not allowed");
         this.genSeed ^= noise;
     }
 
@@ -74,6 +75,7 @@ public class SeededGenerator {
     }
 
     public void setSeed(long seed) {
+        if(!allowModifications) throw new UnsupportedOperationException("Modifications not allowed");
         this.genSeed = seed;
     }
 
@@ -83,10 +85,11 @@ public class SeededGenerator {
 
     /**
      * Refreshes the seed of this generator, the process is independent on
-     * current seed value, therefore is unable to provide a consistent
+     * current seed value, therefore, is unable to provide a consistent
      * output value
      */
     public void refreshSeed() {
+        if(!allowModifications) throw new UnsupportedOperationException("Modifications not allowed");
         this.setSeed(System.nanoTime());
     }
 
@@ -104,7 +107,7 @@ public class SeededGenerator {
         String stringValue = String.valueOf(in);
         long value = 0;
         for(char c : stringValue.toCharArray()) {
-            value += c | in.hashCode();
+            value += c | in.hashCode() >>> 1;
             value ^= c;
         }
         value *= String.valueOf(in).chars().sum();
