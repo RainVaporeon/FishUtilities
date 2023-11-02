@@ -58,13 +58,19 @@ public class IntArray extends ArrayLike<Integer> {
         if(val < 0 || val >= size()) throw new IndexOutOfBoundsException(val);
     }
 
-    public IntArray toMutable() {
-        return new IntArray(this.array.clone(), true);
-    }
-
     @Override
     public boolean isMutable() {
         return mutable;
+    }
+
+    public IntArray toMutable() {
+        if(this.mutable) return this;
+        return new IntArray(this.array.clone(), true);
+    }
+
+    public IntArray toImmutable() {
+        if(!this.mutable) return this;
+        return new IntArray(this.array.clone(), false);
     }
 
     @Override
