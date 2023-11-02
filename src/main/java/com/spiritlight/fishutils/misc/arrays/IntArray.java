@@ -1,26 +1,31 @@
 package com.spiritlight.fishutils.misc.arrays;
 
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.StreamSupport;
 
 /**
  * A class representing an optionally mutable integer array.
  */
-public class IntArray extends ArrayLike<Integer> {
+public class IntArray extends PrimitiveArrayLike<Integer> {
     private final int[] array;
     private final boolean mutable;
 
     public IntArray() {
+        super(int.class, Integer.class);
         this.array = new int[0];
         this.mutable = false;
     }
 
     public IntArray(int[] array) {
+        super(int.class, Integer.class);
         this.array = array;
         this.mutable = false;
     }
 
     public IntArray(int[] array, boolean mutable) {
+        super(int.class, Integer.class);
         this.array = array;
         this.mutable = mutable;
     }
@@ -31,6 +36,7 @@ public class IntArray extends ArrayLike<Integer> {
         return array[index];
     }
 
+    @Override
     public int getAsInt(int index) {
         checkRange(index);
         return array[index];
@@ -127,6 +133,26 @@ public class IntArray extends ArrayLike<Integer> {
             v[i] = mapper.applyAsInt(i);
         }
         return new IntArray(v);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        IntArray integers = (IntArray) object;
+        return mutable == integers.mutable && Arrays.equals(array, integers.array);
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(array);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(mutable);
+        result = 31 * result + Arrays.hashCode(array);
+        return result;
     }
 
     private static class DefaultIntArray extends IntArray {

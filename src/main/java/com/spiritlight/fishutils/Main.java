@@ -12,10 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            SeededGenerator generator = new SeededGenerator(SeededGenerator.ALPHABET_NUMERICAL);
-            generator.setSeed("web");
-            generator.addNoise("web");
-            System.out.println(generator.generate(256));
+            System.out.println(Integer.class == int.class);
         } catch (Throwable t) {
             t.printStackTrace();
         }

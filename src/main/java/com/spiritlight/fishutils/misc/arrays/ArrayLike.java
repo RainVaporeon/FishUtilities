@@ -3,6 +3,7 @@ package com.spiritlight.fishutils.misc.arrays;
 import com.spiritlight.fishutils.misc.annotations.New;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -10,6 +11,15 @@ import java.util.Iterator;
  * @param <T> the array type
  */
 public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializable {
+    /**
+     * The representing array type.
+     * @since 1.2.7
+     */
+    protected final Class<?> type;
+
+    public ArrayLike(Class<T> type) {
+        this.type = type;
+    }
 
     /**
      * Retrieves the element at this index
@@ -71,5 +81,20 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
             // Java's fault
             throw new InternalError(error);
         }
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(this.toArray());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) return false;
+        if(obj instanceof ArrayLike<?> al) {
+            if(this.type != al.type) return false;
+            return Arrays.deepEquals(this.toArray(), al.toArray());
+        }
+        return false;
     }
 }
