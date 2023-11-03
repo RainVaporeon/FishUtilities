@@ -5,6 +5,7 @@ import com.spiritlight.fishutils.misc.annotations.New;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.function.IntFunction;
 
 /**
  * An optionally mutable class representing an array.
@@ -49,6 +50,33 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
      * @return whether this array is mutable
      */
     public abstract boolean isMutable();
+
+    /**
+     * Fills this array in a given range to the specified value
+     * @param from the offset to start, inclusive
+     * @param to the offset to end, exclusive
+     * @param value the value
+     */
+    public void fill(int from, int to, T value) {
+        if(!isMutable()) throw new UnsupportedOperationException();
+        for(int i = from; i < to; i++) {
+            set(i, value);
+        }
+    }
+
+    /**
+     * Fills this array in a given range to the specified value
+     * @param from the offset to start, inclusive
+     * @param to the offset to end, exclusive
+     * @param mapper the value mapper, the actual position is
+     *               supplied into this mapper
+     */
+    public void fill(int from, int to, IntFunction<T> mapper) {
+        if(!isMutable()) throw new UnsupportedOperationException();
+        for(int i = from; i < to; i++) {
+            set(i, mapper.apply(i));
+        }
+    }
 
     /**
      * Converts the representing array into an object array
