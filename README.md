@@ -13,3 +13,4 @@ as this fish codes things.
 - Array-like support providing optionally immutable array structures!
 - Developer annotations for further assertions!
 - Niche collection that one shall use once in a blue moon!
+- Odd stopwatch thing.

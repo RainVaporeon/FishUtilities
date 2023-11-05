@@ -12,7 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            System.out.println(Integer.class == int.class);
+
         } catch (Throwable t) {
             t.printStackTrace();
         }
