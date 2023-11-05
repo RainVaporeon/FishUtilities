@@ -1,5 +1,7 @@
 package com.spiritlight.fishutils.misc;
 
+import java.util.Objects;
+
 /**
  * A stable field that updates at most once during the program runtime.
  * @param <T> the type
@@ -41,5 +43,23 @@ public class StableField<T> {
      */
     public boolean isModified() {
         return modified;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        StableField<?> that = (StableField<?>) object;
+        return Objects.equals(t, that.t);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(t);
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(t);
     }
 }

@@ -36,6 +36,11 @@ public interface ILogger {
 
     void debug(String message);
 
+    // @since 1.2.8, for some reason this was not added
+    default void debug(String message, Throwable t) {
+        debug(message);
+    }
+
     static ILogger of(String name) {
         return new Logger(name);
     }

@@ -1,6 +1,7 @@
 package com.spiritlight.fishutils.logging;
 
 import com.spiritlight.fishutils.action.Result;
+import com.spiritlight.fishutils.utils.noop.io.NoOpPrintStream;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -18,7 +19,7 @@ public class Logger implements ILogger {
 
     private static final SimpleDateFormat DEFAULT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
-    private final Thread creator;
+    // 1.2.8: Removed creator thread control, simply redundancy.
 
     private final File out;
 
@@ -28,6 +29,10 @@ public class Logger implements ILogger {
 
     // 1.2.6: Logger enhancements
     private PrintStream stream;
+
+    // 1.2.7: Further enhancements
+    private PrintStream errStream;
+    private PrintStream debugStream;
 
     public Logger(String name) {
         this(name, null);
@@ -45,14 +50,24 @@ public class Logger implements ILogger {
         this.name = name;
         this.out = LogInternals.getSharedObjectIfPresent(out);
         this.format = Objects.requireNonNull(dateFormat);
-        this.creator = Thread.currentThread();
-        this.stream = stream == null ? System.out : stream;
+        this.stream = stream;
+        this.errStream = stream;
+        this.debugStream = stream;
 
         LogInternals.appendFileIfAbsent(out);
     }
 
+    /**
+     * Configures this stream to direct all default outputs to {@link System#out}, and
+     * all errors to {@link System#err}
+     */
+    public void configured() {
+        setOutputStream(System.out);
+        setErrStream(System.err);
+        setDebugStream(System.out);
+    }
+
     public Result setOut(File out) {
-        if(Thread.currentThread() != creator) throw new SecurityException("setOut() can only be called by creator thread");
         try {
             if(!out.exists()) out.createNewFile();
             Field field = this.getClass().getDeclaredField("out");
@@ -73,7 +88,41 @@ public class Logger implements ILogger {
         this.stream = stream;
     }
 
+    /**
+     * Sets the error stream
+     * @param errStream the stream
+     * @apiNote this will forward anything at severity {@code ERROR} or {@code FATAL}
+     * to this stream.
+     * @since 1.2.8
+     */
+    public void setErrStream(PrintStream errStream) {
+        this.errStream = errStream;
+    }
+
+    /**
+     * Sets the debug stream
+     * @param debugStream the stream
+     * @apiNote this will forward anything at severity {@code DEBUG} to this stream.
+     * @since 1.2.8
+     */
+    public void setDebugStream(PrintStream debugStream) {
+        this.debugStream = debugStream;
+    }
+
+    /**
+     * Directs all streams to this output stream
+     * @param stream the stream
+     * @since 1.2.8
+     */
+    public void setAllOutputStream(PrintStream stream) {
+        this.stream = stream;
+        this.errStream = stream;
+        this.debugStream = stream;
+    }
+
     public void log(Severity severity, String message, Throwable t) {
+
+        PrintStream stream = this.getOutput(severity);
 
         stream.println("[" + name + "] " + severity + message + RESET);
 
@@ -81,7 +130,7 @@ public class Logger implements ILogger {
             writeLog("[" + name + "] " + severity + ": " + message);
         if (t != null) {
             stream.print(severity);
-            t.printStackTrace();
+            t.printStackTrace(getOutput(Severity.ERROR));
             stream.println(RESET);
             if(out != null)
                 writeError(t);
@@ -98,10 +147,8 @@ public class Logger implements ILogger {
     }
 
     public void logStackTrace() {
-        this.debug("Stacktrace dump requested: ");
-        for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
-            this.debug(element.toString());
-        }
+        Throwable t = new Throwable("Stacktrace dump requested: ");
+        this.debug("Stacktrace requested:", t);
     }
 
     @Override
@@ -159,6 +206,11 @@ public class Logger implements ILogger {
         log(Severity.DEBUG, message, null);
     }
 
+    @Override
+    public void debug(String message, Throwable t) {
+        log(Severity.DEBUG, message, t);
+    }
+
     // Since the log is same across all threads, we use static
 
     /**
@@ -173,7 +225,7 @@ public class Logger implements ILogger {
         try {
             append(out.toPath(), contents);
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(getOutput(Severity.ERROR));
         }
     }
 
@@ -191,10 +243,27 @@ public class Logger implements ILogger {
                 newline(out.toPath());
                 t.printStackTrace(stream);
             } catch (FileNotFoundException e) {
-                stream.println("Cannot write to error: ");
-                e.printStackTrace();
+                getOutput(Severity.ERROR).println("Cannot write to error: ");
+                e.printStackTrace(getOutput(Severity.ERROR));
             }
         }
+    }
+
+    private PrintStream getOutput(Severity severity) {
+        return switch (severity) {
+            case INFO, SUCCESS, WARN -> {
+                if (stream == null) yield new NoOpPrintStream();
+                yield stream;
+            }
+            case ERROR, FATAL -> {
+                if (errStream == null) yield new NoOpPrintStream();
+                yield errStream;
+            }
+            case DEBUG -> {
+                if (debugStream == null) yield new NoOpPrintStream();
+                yield debugStream;
+            }
+        };
     }
 
     // Creates a new line
@@ -226,7 +295,7 @@ public class Logger implements ILogger {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(getOutput(Severity.ERROR));
         }
     }
 
