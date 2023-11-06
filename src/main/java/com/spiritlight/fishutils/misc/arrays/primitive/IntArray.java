@@ -1,5 +1,6 @@
 package com.spiritlight.fishutils.misc.arrays.primitive;
 
+import com.spiritlight.fishutils.misc.arrays.ArrayLike;
 import com.spiritlight.fishutils.misc.arrays.PrimitiveArrayLike;
 
 import java.util.Arrays;
@@ -81,6 +82,40 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
         return new IntArray(this.array.clone(), false);
     }
 
+    public IntArray transpose() {
+        if(Math.sqrt(this.size()) != (int) Math.sqrt(size())) throw new IllegalArgumentException("not a square sized array");
+
+        IntArray array = createMutable(this.size());
+
+        int length = (int) Math.sqrt(this.size());
+
+        int idx = 0;
+        for(int i = 0; i < length; i++) {
+            for(int j = 0; j < length; j++) {
+                int index = i + j * length;
+                array.set(idx++, get(index));
+            }
+        }
+        return array;
+    }
+
+    @Override
+    public IntArray transpose(int row, int col) {
+        IntArray array = IntArray.createMutable(row * col);
+        int idx = 0;
+        for(int i = 0; i < row; i++) {
+            for(int j = 0; j < col; j++) {
+                int index = i + j * col;
+                array.set(idx++, get(index));
+            }
+        }
+        return array;
+    }
+
+    public IntArray copy() {
+        return new IntArray(this.array.clone());
+    }
+
     @Override
     public int size() {
         return array.length;
@@ -93,6 +128,16 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
     public static final IntUnaryOperator NON_NEGATIVE = i -> Math.max(0, i);
 
     public static final IntUnaryOperator REVERSE = i -> -i;
+
+    public static IntArray createMutable(int size) {
+        return new IntArray(new int[size], true);
+    }
+
+    public static IntArray createMutable(int size, int defaultElements) {
+        int[] a = new int[size];
+        Arrays.fill(a, defaultElements);
+        return new IntArray(a, true);
+    }
 
     /**
      * Converts the given int array to an immutable IntArray
@@ -142,7 +187,7 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         IntArray integers = (IntArray) object;
-        return mutable == integers.mutable && Arrays.equals(array, integers.array);
+        return Arrays.equals(array, integers.array);
     }
 
     @Override
