@@ -121,7 +121,6 @@ public class Logger implements ILogger {
     }
 
     public void log(Severity severity, String message, Throwable t) {
-
         PrintStream stream = this.getOutput(severity);
 
         stream.println("[" + name + "] " + severity + message + RESET);

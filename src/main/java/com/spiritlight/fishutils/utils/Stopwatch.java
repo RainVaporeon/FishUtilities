@@ -14,6 +14,7 @@ public class Stopwatch {
     private long startTime;
     private final Map<String, Long> timeMap = new DefaultedMap<>(0L);
     private final Map<String, Long> records = new HashMap<>();
+    private final Map<String, String> nameMap = new HashMap<>();
 
     public Stopwatch() {}
 
@@ -56,6 +57,17 @@ public class Stopwatch {
     }
 
     /**
+     * The name to use in place of the recorded key,
+     * this key is only used on retrieval of the string
+     * representation on this object
+     * @param name the name
+     * @param alias the alias
+     */
+    public void name(String name, String alias) {
+        nameMap.put(name, alias);
+    }
+
+    /**
      * Retrieves all time maps, the String being the key, and the value being
      * time elapsed. Null is used as a key here to denote the time since this
      * stopwatch started.
@@ -90,7 +102,7 @@ public class Stopwatch {
     public String getRecordString() {
         StringBuilder builder = new StringBuilder();
         records.forEach((name, time) -> {
-            builder.append(name).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")");
+            builder.append(nameMap.getOrDefault(name, name)).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")");
         });
         return builder.toString();
     }
@@ -98,14 +110,14 @@ public class Stopwatch {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        timeMap.forEach((str, time) -> {
-            builder.append(str).append(":").append(" Since ").append(time);
+        timeMap.forEach((name, time) -> {
+            builder.append(nameMap.getOrDefault(name, name)).append(":").append(" Since ").append(time);
         });
         if(records.isEmpty()) {
             return builder.toString();
         } else {
             records.forEach((name, time) -> {
-                builder.append(name).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")");
+                builder.append(nameMap.getOrDefault(name, name)).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")");
             });
             return builder.toString();
         }
