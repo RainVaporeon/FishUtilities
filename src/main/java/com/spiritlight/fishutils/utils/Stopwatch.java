@@ -102,7 +102,7 @@ public class Stopwatch {
     public String getRecordString() {
         StringBuilder builder = new StringBuilder();
         records.forEach((name, time) -> {
-            builder.append(nameMap.getOrDefault(name, name)).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")");
+            builder.append(nameMap.getOrDefault(name, name)).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")").append("\n");
         });
         return builder.toString();
     }
@@ -111,15 +111,13 @@ public class Stopwatch {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         timeMap.forEach((name, time) -> {
-            builder.append(nameMap.getOrDefault(name, name)).append(":").append(" Since ").append(time);
+            builder.append(nameMap.getOrDefault(name, name)).append(":").append(" Since ").append(time).append("\n");
         });
-        if(records.isEmpty()) {
-            return builder.toString();
-        } else {
+        if (!records.isEmpty()) {
             records.forEach((name, time) -> {
-                builder.append(nameMap.getOrDefault(name, name)).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")");
+                builder.append(nameMap.getOrDefault(name, name)).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")").append("\n");
             });
-            return builder.toString();
         }
+        return builder.toString();
     }
 }
