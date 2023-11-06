@@ -52,13 +52,21 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
     public abstract boolean isMutable();
 
     /**
+     * Checks the range and throws an {@link IndexOutOfBoundsException} if
+     * {@code value} is less than 0 or larger or equal to {@link ArrayLike#size()}
+     * @param value the value
+     */
+    protected void checkRange(int value) {
+        if(value < 0 || value >= size()) throw new IndexOutOfBoundsException(value);
+    }
+
+    /**
      * Fills this array in a given range to the specified value
      * @param from the offset to start, inclusive
      * @param to the offset to end, exclusive
      * @param value the value
      */
     public void fill(int from, int to, T value) {
-        if(!isMutable()) throw new UnsupportedOperationException();
         for(int i = from; i < to; i++) {
             set(i, value);
         }
@@ -72,7 +80,6 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
      *               supplied into this mapper
      */
     public void fill(int from, int to, IntFunction<T> mapper) {
-        if(!isMutable()) throw new UnsupportedOperationException();
         for(int i = from; i < to; i++) {
             set(i, mapper.apply(i));
         }
@@ -124,5 +131,10 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
             return Arrays.deepEquals(this.toArray(), al.toArray());
         }
         return false;
+    }
+
+    @SafeVarargs
+    public static <T> ArrayLike<T> of(T... elements) {
+        return new ReferenceArrayLike<>(elements);
     }
 }

@@ -13,6 +13,7 @@ import java.util.Objects;
 public class Stopwatch {
     private long startTime;
     private final Map<String, Long> timeMap = new DefaultedMap<>(0L);
+    private final Map<String, Long> records = new HashMap<>();
 
     public Stopwatch() {}
 
@@ -45,6 +46,16 @@ public class Stopwatch {
     }
 
     /**
+     * Records the elapsed time since this key was recorded
+     * @param name the name
+     * @throws IllegalStateException if this key was not fenced.
+     */
+    public void record(String name) {
+        if(!timeMap.containsKey(name)) throw new IllegalStateException("unknown time name: " + name);
+        records.put(name, System.nanoTime() - timeMap.get(name));
+    }
+
+    /**
      * Retrieves all time maps, the String being the key, and the value being
      * time elapsed. Null is used as a key here to denote the time since this
      * stopwatch started.
@@ -74,5 +85,29 @@ public class Stopwatch {
      */
     public void clear() {
         timeMap.clear();
+    }
+
+    public String getRecordString() {
+        StringBuilder builder = new StringBuilder();
+        records.forEach((name, time) -> {
+            builder.append(name).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")");
+        });
+        return builder.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        timeMap.forEach((str, time) -> {
+            builder.append(str).append(":").append(" Since ").append(time);
+        });
+        if(records.isEmpty()) {
+            return builder.toString();
+        } else {
+            records.forEach((name, time) -> {
+                builder.append(name).append(":").append(" ").append(time).append("ns").append(" (~").append(String.format("%.2f", time / 1000000d)).append("ms").append(")");
+            });
+            return builder.toString();
+        }
     }
 }

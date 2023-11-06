@@ -1,53 +1,57 @@
-package com.spiritlight.fishutils.misc.arrays;
+package com.spiritlight.fishutils.misc.arrays.primitive;
+
+import com.spiritlight.fishutils.misc.arrays.PrimitiveArrayLike;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.IntUnaryOperator;
+import java.util.function.IntFunction;
+import java.util.function.LongUnaryOperator;
 import java.util.stream.StreamSupport;
 
 /**
- * A class representing an optionally mutable integer array.
+ * A class representing an optionally mutable long array.
  */
-public class IntArray extends PrimitiveArrayLike<Integer> {
-    private final int[] array;
+public class LongArray extends PrimitiveArrayLike<Long> {
+    private final long[] array;
     private final boolean mutable;
 
-    public IntArray() {
-        super(int.class, Integer.class);
-        this.array = new int[0];
+    public LongArray() {
+        super(long.class, Long.class);
+        this.array = new long[0];
         this.mutable = false;
     }
 
-    public IntArray(int[] array) {
-        super(int.class, Integer.class);
+    public LongArray(long[] array) {
+        super(long.class, Long.class);
         this.array = array;
         this.mutable = false;
     }
 
-    public IntArray(int[] array, boolean mutable) {
-        super(int.class, Integer.class);
+    public LongArray(long[] array, boolean mutable) {
+        super(long.class, Long.class);
         this.array = array;
         this.mutable = mutable;
     }
 
     @Override
-    public Integer get(int index) {
+    public Long get(int index) {
         checkRange(index);
         return array[index];
     }
 
     @Override
-    public int getAsInt(int index) {
+    public long getAsLong(int index) {
         checkRange(index);
         return array[index];
     }
 
     @Override
-    public void set(int index, Integer value) {
-        setInt(index, value);
+    public void set(int index, Long value) {
+        setLong(index, value);
     }
 
-    public void setInt(int index, int value) {
+    @Override
+    public void setLong(int index, long value) {
         if(mutable) {
             checkRange(index);
             array[index] = value;
@@ -56,8 +60,8 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
         }
     }
 
-    public int[] toIntArray() {
-        return StreamSupport.stream(this.spliterator(), false).mapToInt(Integer::intValue).toArray();
+    public long[] toLongArray() {
+        return StreamSupport.stream(this.spliterator(), false).mapToLong(Number::longValue).toArray();
     }
 
     protected void checkRange(int val) {
@@ -69,14 +73,14 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
         return mutable;
     }
 
-    public IntArray toMutable() {
+    public LongArray toMutable() {
         if(this.mutable) return this;
-        return new IntArray(this.array.clone(), true);
+        return new LongArray(this.array.clone(), true);
     }
 
-    public IntArray toImmutable() {
+    public LongArray toImmutable() {
         if(!this.mutable) return this;
-        return new IntArray(this.array.clone(), false);
+        return new LongArray(this.array.clone(), false);
     }
 
     @Override
@@ -88,17 +92,17 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
         Static collections
      */
 
-    public static final IntUnaryOperator NON_NEGATIVE = i -> Math.max(0, i);
+    public static final LongUnaryOperator NON_NEGATIVE = i -> Math.max(0, i);
 
-    public static final IntUnaryOperator REVERSE = i -> -i;
+    public static final LongUnaryOperator REVERSE = i -> -i;
 
     /**
-     * Converts the given int array to an immutable IntArray
+     * Converts the given int array to an immutable LongArray
      * @param array the array
-     * @return the wrapped IntArray
+     * @return the wrapped LongArray
      */
-    public static IntArray fromArray(int... array) {
-        return new IntArray(array);
+    public static LongArray fromArray(long... array) {
+        return new LongArray(array);
     }
 
     /**
@@ -106,18 +110,18 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
      * @param size the size
      * @return an immutable array filled with zeroes.
      */
-    public static IntArray createEmpty(int size) {
-        return new DefaultIntArray(size, 0);
+    public static LongArray createEmpty(int size) {
+        return new DefaultLongArray(size, 0);
     }
 
     /**
      * Creates an immutable array with size {@code size} and all elements set to {@code value}.
      * @param size the size
      * @param value the value
-     * @return an immutable array filled with {@code  value}.
+     * @return an immutable array filled with {@code value}.
      */
-    public static IntArray create(int size, int value) {
-        return new DefaultIntArray(size, value);
+    public static LongArray create(int size, long value) {
+        return new DefaultLongArray(size, value);
     }
 
     /**
@@ -125,22 +129,22 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
      * individually to its position as described by {@code mapper}
      * @param size the size
      * @param mapper the mapper
-     * @return a new IntArray
+     * @return a new LongArray
      */
-    public static IntArray create(int size, IntUnaryOperator mapper) {
-        int[] v = new int[size];
+    public static LongArray create(int size, IntFunction<Long> mapper) {
+        long[] v = new long[size];
         for(int i = 0; i < size; i++) {
-            v[i] = mapper.applyAsInt(i);
+            v[i] = mapper.apply(i);
         }
-        return new IntArray(v);
+        return new LongArray(v);
     }
 
     @Override
     public boolean equals(Object object) {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
-        IntArray integers = (IntArray) object;
-        return mutable == integers.mutable && Arrays.equals(array, integers.array);
+        LongArray arr = (LongArray) object;
+        return mutable == arr.mutable && Arrays.equals(array, arr.array);
     }
 
     @Override
@@ -155,11 +159,11 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
         return result;
     }
 
-    private static class DefaultIntArray extends IntArray {
+    private static class DefaultLongArray extends LongArray {
         private final int size;
-        private final int value;
+        private final long value;
 
-        private DefaultIntArray(int size, int value) {
+        private DefaultLongArray(int size, long value) {
             super(null, false);
             if(size < 0) throw new IllegalArgumentException("size cannot be negative");
             this.size = size;
@@ -167,13 +171,13 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
         }
 
         @Override
-        public Integer get(int index) {
+        public Long get(int index) {
             checkRange(index);
             return value;
         }
 
         @Override
-        public int getAsInt(int index) {
+        public long getAsLong(int index) {
             checkRange(index);
             return value;
         }

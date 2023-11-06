@@ -1,7 +1,5 @@
 package com.spiritlight.fishutils;
 
-import com.spiritlight.fishutils.utils.secure.SeededGenerator;
-
 import java.math.BigDecimal;
 import java.util.List;
 

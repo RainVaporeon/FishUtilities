@@ -25,7 +25,7 @@ public abstract class PrimitiveArrayLike<T> extends ArrayLike<T> {
         return (boolean) this.getAt(index);
     }
 
-    public void setAsBoolean(int index, boolean value) {
+    public void setBoolean(int index, boolean value) {
         setAs(index, value);
     }
 
@@ -83,6 +83,54 @@ public abstract class PrimitiveArrayLike<T> extends ArrayLike<T> {
 
     public void setLong(int index, long value) {
         setAs(index, value);
+    }
+
+    public void fill(int from, int to, byte value) {
+        for(int i = from; i < to; i++) {
+            this.setAs(i, value);
+        }
+    }
+
+    public void fill(int from, int to, short value) {
+        for(int i = from; i < to; i++) {
+            this.setAs(i, value);
+        }
+    }
+
+    public void fill(int from, int to, char value) {
+        for(int i = from; i < to; i++) {
+            this.setAs(i, value);
+        }
+    }
+
+    public void fill(int from, int to, int value) {
+        for(int i = from; i < to; i++) {
+            this.setAs(i, value);
+        }
+    }
+
+    public void fill(int from, int to, float value) {
+        for(int i = from; i < to; i++) {
+            this.setAs(i, value);
+        }
+    }
+
+    public void fill(int from, int to, double value) {
+        for(int i = from; i < to; i++) {
+            this.setAs(i, value);
+        }
+    }
+
+    public void fill(int from, int to, long value) {
+        for(int i = from; i < to; i++) {
+            this.setAs(i, value);
+        }
+    }
+
+    public void fill(int from, int to, boolean value) {
+        for(int i = from; i < to; i++) {
+            this.setAs(i, value);
+        }
     }
 
     private Object getAt(int index) {
