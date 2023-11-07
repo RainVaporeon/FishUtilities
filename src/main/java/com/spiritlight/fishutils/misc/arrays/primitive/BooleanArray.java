@@ -105,7 +105,7 @@ public class BooleanArray extends PrimitiveArrayLike<Boolean> {
      * @return an immutable array filled with zeroes.
      */
     public static BooleanArray createEmpty(int size) {
-        return new DefaultBooleanArray(size, false);
+        return new BooleanArray(new boolean[size], false);
     }
 
     /**
@@ -115,7 +115,9 @@ public class BooleanArray extends PrimitiveArrayLike<Boolean> {
      * @return an immutable array filled with {@code value}.
      */
     public static BooleanArray create(int size, boolean value) {
-        return new DefaultBooleanArray(size, value);
+        boolean[] arr = new boolean[size];
+        Arrays.fill(arr, value);
+        return new BooleanArray(arr);
     }
 
     /**
@@ -151,34 +153,5 @@ public class BooleanArray extends PrimitiveArrayLike<Boolean> {
         int result = Objects.hash(mutable);
         result = 31 * result + Arrays.hashCode(array);
         return result;
-    }
-
-    private static class DefaultBooleanArray extends BooleanArray {
-        private final int size;
-        private final boolean value;
-
-        private DefaultBooleanArray(int size, boolean value) {
-            super(null, false);
-            if(size < 0) throw new IllegalArgumentException("size cannot be negative");
-            this.size = size;
-            this.value = value;
-        }
-
-        @Override
-        public Boolean get(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        public boolean getAsBoolean(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        protected void checkRange(int val) {
-            if(val < 0 || val >= size) throw new IndexOutOfBoundsException(val);
-        }
     }
 }

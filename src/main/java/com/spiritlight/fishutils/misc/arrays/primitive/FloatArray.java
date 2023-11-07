@@ -101,7 +101,7 @@ public class FloatArray extends PrimitiveArrayLike<Float> {
      * @return an immutable array filled with zeroes.
      */
     public static FloatArray createEmpty(int size) {
-        return new DefaultFloatArray(size, 0);
+        return new FloatArray(new float[size]);
     }
 
     /**
@@ -111,7 +111,9 @@ public class FloatArray extends PrimitiveArrayLike<Float> {
      * @return an immutable array filled with {@code value}.
      */
     public static FloatArray create(int size, float value) {
-        return new DefaultFloatArray(size, value);
+        float[] arr = new float[size];
+        Arrays.fill(arr, value);
+        return new FloatArray(arr);
     }
 
     /**
@@ -149,32 +151,4 @@ public class FloatArray extends PrimitiveArrayLike<Float> {
         return result;
     }
 
-    private static class DefaultFloatArray extends FloatArray {
-        private final int size;
-        private final float value;
-
-        private DefaultFloatArray(int size, float value) {
-            super(null, false);
-            if(size < 0) throw new IllegalArgumentException("size cannot be negative");
-            this.size = size;
-            this.value = value;
-        }
-
-        @Override
-        public Float get(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        public float getAsFloat(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        protected void checkRange(int val) {
-            if(val < 0 || val >= size) throw new IndexOutOfBoundsException(val);
-        }
-    }
 }

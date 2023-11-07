@@ -101,7 +101,7 @@ public class ShortArray extends PrimitiveArrayLike<Short> {
      * @return an immutable array filled with zeroes.
      */
     public static ShortArray createEmpty(int size) {
-        return new DefaultShortArray(size, (short) 0);
+        return new ShortArray(new short[size]);
     }
 
     /**
@@ -111,7 +111,9 @@ public class ShortArray extends PrimitiveArrayLike<Short> {
      * @return an immutable array filled with {@code value}.
      */
     public static ShortArray create(int size, short value) {
-        return new DefaultShortArray(size, value);
+        short[] arr = new short[size];
+        Arrays.fill(arr, value);
+        return new ShortArray(arr);
     }
 
     /**

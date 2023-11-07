@@ -101,7 +101,7 @@ public class CharacterArray extends PrimitiveArrayLike<Character> {
      * @return an immutable array filled with zeroes.
      */
     public static CharacterArray createEmpty(int size) {
-        return new DefaultCharArray(size, '\0');
+        return new CharacterArray(new char[size]);
     }
 
     /**
@@ -111,7 +111,9 @@ public class CharacterArray extends PrimitiveArrayLike<Character> {
      * @return an immutable array filled with {@code value}.
      */
     public static CharacterArray create(int size, char value) {
-        return new DefaultCharArray(size, value);
+        char[] arr = new char[size];
+        Arrays.fill(arr, value);
+        return new CharacterArray(arr);
     }
 
     /**
@@ -149,32 +151,4 @@ public class CharacterArray extends PrimitiveArrayLike<Character> {
         return result;
     }
 
-    private static class DefaultCharArray extends CharacterArray {
-        private final int size;
-        private final char value;
-
-        private DefaultCharArray(int size, char value) {
-            super(null, false);
-            if(size < 0) throw new IllegalArgumentException("size cannot be negative");
-            this.size = size;
-            this.value = value;
-        }
-
-        @Override
-        public Character get(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        public char getAsCharacter(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        protected void checkRange(int val) {
-            if(val < 0 || val >= size) throw new IndexOutOfBoundsException(val);
-        }
-    }
 }

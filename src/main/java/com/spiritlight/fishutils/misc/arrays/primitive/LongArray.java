@@ -111,7 +111,7 @@ public class LongArray extends PrimitiveArrayLike<Long> {
      * @return an immutable array filled with zeroes.
      */
     public static LongArray createEmpty(int size) {
-        return new DefaultLongArray(size, 0);
+        return new LongArray(new long[size]);
     }
 
     /**
@@ -121,7 +121,9 @@ public class LongArray extends PrimitiveArrayLike<Long> {
      * @return an immutable array filled with {@code value}.
      */
     public static LongArray create(int size, long value) {
-        return new DefaultLongArray(size, value);
+        long[] l = new long[size];
+        Arrays.fill(l, value);
+        return new LongArray(l);
     }
 
     /**
@@ -159,32 +161,4 @@ public class LongArray extends PrimitiveArrayLike<Long> {
         return result;
     }
 
-    private static class DefaultLongArray extends LongArray {
-        private final int size;
-        private final long value;
-
-        private DefaultLongArray(int size, long value) {
-            super(null, false);
-            if(size < 0) throw new IllegalArgumentException("size cannot be negative");
-            this.size = size;
-            this.value = value;
-        }
-
-        @Override
-        public Long get(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        public long getAsLong(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        protected void checkRange(int val) {
-            if(val < 0 || val >= size) throw new IndexOutOfBoundsException(val);
-        }
-    }
 }

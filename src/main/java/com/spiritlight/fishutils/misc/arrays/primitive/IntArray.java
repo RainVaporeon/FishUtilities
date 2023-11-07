@@ -124,7 +124,7 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
      * @return an immutable array filled with zeroes.
      */
     public static IntArray createEmpty(int size) {
-        return new DefaultIntArray(size, 0);
+        return new IntArray(new int[size]);
     }
 
     /**
@@ -134,7 +134,9 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
      * @return an immutable array filled with {@code  value}.
      */
     public static IntArray create(int size, int value) {
-        return new DefaultIntArray(size, value);
+        int[] i = new int[size];
+        Arrays.fill(i, value);
+        return new IntArray(i);
     }
 
     /**
@@ -170,34 +172,5 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
         int result = Objects.hash(mutable);
         result = 31 * result + Arrays.hashCode(array);
         return result;
-    }
-
-    private static class DefaultIntArray extends IntArray {
-        private final int size;
-        private final int value;
-
-        private DefaultIntArray(int size, int value) {
-            super(null, false);
-            if(size < 0) throw new IllegalArgumentException("size cannot be negative");
-            this.size = size;
-            this.value = value;
-        }
-
-        @Override
-        public Integer get(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        public int getAsInt(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        protected void checkRange(int val) {
-            if(val < 0 || val >= size) throw new IndexOutOfBoundsException(val);
-        }
     }
 }

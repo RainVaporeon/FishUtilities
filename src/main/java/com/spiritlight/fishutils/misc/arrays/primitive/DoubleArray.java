@@ -111,7 +111,7 @@ public class DoubleArray extends PrimitiveArrayLike<Double> {
      * @return an immutable array filled with zeroes.
      */
     public static DoubleArray createEmpty(int size) {
-        return new DefaultDoubleArray(size, 0);
+        return new DoubleArray(new double[size]);
     }
 
     /**
@@ -121,7 +121,9 @@ public class DoubleArray extends PrimitiveArrayLike<Double> {
      * @return an immutable array filled with {@code value}.
      */
     public static DoubleArray create(int size, double value) {
-        return new DefaultDoubleArray(size, value);
+        double[] arr = new double[size];
+        Arrays.fill(arr, value);
+        return new DoubleArray(arr);
     }
 
     /**
@@ -159,32 +161,4 @@ public class DoubleArray extends PrimitiveArrayLike<Double> {
         return result;
     }
 
-    private static class DefaultDoubleArray extends DoubleArray {
-        private final int size;
-        private final double value;
-
-        private DefaultDoubleArray(int size, double value) {
-            super(null, false);
-            if(size < 0) throw new IllegalArgumentException("size cannot be negative");
-            this.size = size;
-            this.value = value;
-        }
-
-        @Override
-        public Double get(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        public double getAsDouble(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        protected void checkRange(int val) {
-            if(val < 0 || val >= size) throw new IndexOutOfBoundsException(val);
-        }
-    }
 }

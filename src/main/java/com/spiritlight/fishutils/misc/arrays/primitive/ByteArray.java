@@ -101,7 +101,7 @@ public class ByteArray extends PrimitiveArrayLike<Byte> {
      * @return an immutable array filled with zeroes.
      */
     public static ByteArray createEmpty(int size) {
-        return new DefaultByteArray(size, (byte) 0);
+        return new ByteArray(new byte[size]);
     }
 
     /**
@@ -111,7 +111,9 @@ public class ByteArray extends PrimitiveArrayLike<Byte> {
      * @return an immutable array filled with {@code value}.
      */
     public static ByteArray create(int size, byte value) {
-        return new DefaultByteArray(size, value);
+        byte[] arr = new byte[size];
+        Arrays.fill(arr, value);
+        return new ByteArray(arr);
     }
 
     /**
@@ -147,34 +149,5 @@ public class ByteArray extends PrimitiveArrayLike<Byte> {
         int result = Objects.hash(mutable);
         result = 31 * result + Arrays.hashCode(array);
         return result;
-    }
-
-    private static class DefaultByteArray extends ByteArray {
-        private final int size;
-        private final byte value;
-
-        private DefaultByteArray(int size, byte value) {
-            super(null, false);
-            if(size < 0) throw new IllegalArgumentException("size cannot be negative");
-            this.size = size;
-            this.value = value;
-        }
-
-        @Override
-        public Byte get(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        public byte getAsByte(int index) {
-            checkRange(index);
-            return value;
-        }
-
-        @Override
-        protected void checkRange(int val) {
-            if(val < 0 || val >= size) throw new IndexOutOfBoundsException(val);
-        }
     }
 }
