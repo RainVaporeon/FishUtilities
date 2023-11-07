@@ -60,7 +60,7 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
     }
 
     public int[] toIntArray() {
-        return StreamSupport.stream(this.spliterator(), false).mapToInt(Integer::intValue).toArray();
+        return this.array.clone();
     }
 
     protected void checkRange(int val) {

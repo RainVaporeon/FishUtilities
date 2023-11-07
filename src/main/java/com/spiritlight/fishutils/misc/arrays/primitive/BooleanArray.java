@@ -59,11 +59,7 @@ public class BooleanArray extends PrimitiveArrayLike<Boolean> {
     }
 
     public boolean[] toBooleanArray() {
-        boolean[] b = new boolean[size()];
-        for(int i = 0; i < size(); i++) {
-            b[i] = get(i);
-        }
-        return b;
+        return this.array.clone();
     }
 
     protected void checkRange(int val) {

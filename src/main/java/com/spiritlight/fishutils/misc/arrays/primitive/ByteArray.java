@@ -59,11 +59,7 @@ public class ByteArray extends PrimitiveArrayLike<Byte> {
     }
 
     public byte[] toByteArray() {
-        byte[] b = new byte[size()];
-        for(int i = 0; i < size(); i++) {
-            b[i] = getAsByte(i);
-        }
-        return b;
+        return this.array.clone();
     }
 
     protected void checkRange(int val) {

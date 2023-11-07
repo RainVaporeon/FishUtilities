@@ -59,11 +59,7 @@ public class FloatArray extends PrimitiveArrayLike<Float> {
     }
 
     public float[] toFloatArray() {
-        float[] f = new float[size()];
-        for(int i = 0; i < size(); i++) {
-            f[i] = get(i);
-        }
-        return f;
+        return this.array.clone();
     }
 
     protected void checkRange(int val) {

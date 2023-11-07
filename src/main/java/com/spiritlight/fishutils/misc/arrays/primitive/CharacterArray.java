@@ -59,11 +59,7 @@ public class CharacterArray extends PrimitiveArrayLike<Character> {
     }
 
     public char[] toCharArray() {
-        char[] a = new char[size()];
-        for(int i = 0; i < size(); i++) {
-            a[i] = getAsCharacter(i);
-        }
-        return a;
+        return this.array.clone();
     }
 
     protected void checkRange(int val) {

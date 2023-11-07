@@ -61,7 +61,7 @@ public class LongArray extends PrimitiveArrayLike<Long> {
     }
 
     public long[] toLongArray() {
-        return StreamSupport.stream(this.spliterator(), false).mapToLong(Number::longValue).toArray();
+        return this.array.clone();
     }
 
     protected void checkRange(int val) {

@@ -61,7 +61,7 @@ public class DoubleArray extends PrimitiveArrayLike<Double> {
     }
 
     public double[] toDoubleArray() {
-        return StreamSupport.stream(this.spliterator(), false).mapToDouble(Number::doubleValue).toArray();
+        return this.array.clone();
     }
 
     protected void checkRange(int val) {

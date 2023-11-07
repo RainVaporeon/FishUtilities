@@ -59,11 +59,7 @@ public class ShortArray extends PrimitiveArrayLike<Short> {
     }
 
     public short[] toShortArray() {
-        short[] arr = new short[size()];
-        for(int i = 0; i < size(); i++) {
-            arr[i] = getAsShort(i);
-        }
-        return arr;
+        return this.array.clone();
     }
 
     protected void checkRange(int val) {
