@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.IntFunction;
 
 /**
@@ -183,6 +182,6 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
 
     @SafeVarargs
     public static <T> ArrayLike<T> of(T... elements) {
-        return new ReferenceArrayLike<>(elements);
+        return new ReferenceArray<>(elements);
     }
 }

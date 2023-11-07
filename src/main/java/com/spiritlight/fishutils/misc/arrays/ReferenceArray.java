@@ -1,16 +1,18 @@
 package com.spiritlight.fishutils.misc.arrays;
 
-public class ReferenceArrayLike<T> extends ArrayLike<T> {
+import com.spiritlight.fishutils.misc.arrays.ArrayLike;
+
+public class ReferenceArray<T> extends ArrayLike<T> {
     private final T[] array;
     private final boolean mutable;
 
     @SafeVarargs
-    public ReferenceArrayLike(T... array) {
+    public ReferenceArray(T... array) {
         this(false, array);
     }
 
     @SafeVarargs @SuppressWarnings("unchecked")
-    public ReferenceArrayLike(boolean mutable, T... array) {
+    public ReferenceArray(boolean mutable, T... array) {
         super((Class<T>) array.getClass().componentType());
         this.array = array;
         this.mutable = mutable;
