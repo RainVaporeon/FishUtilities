@@ -14,3 +14,10 @@ as this fish codes things.
 - Developer annotations for further assertions!
 - Niche collection that one shall use once in a blue moon!
 - Odd stopwatch thing.
+- 
+## Adding to local repository
+Run `push version [-snapshot]` after building.
+
+If it doesn't work the first time, the second time might work.
+If the second time does not work, double-check your parameter
+and re-open the cmd since the file is wonky on command line.
