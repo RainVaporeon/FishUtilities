@@ -3,6 +3,7 @@ package com.spiritlight.fishutils.utils;
 import com.spiritlight.fishutils.collections.DefaultedMap;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -12,9 +13,12 @@ import java.util.Objects;
  */
 public class Stopwatch {
     private long startTime;
+    // Holds the time since the fence started
     private final Map<String, Long> timeMap = new DefaultedMap<>(0L);
+    // Holds the records
     private final Map<String, Long> records = new HashMap<>();
-    private final Map<String, String> nameMap = new HashMap<>();
+    // Holds the name translations
+    private final Map<String, String> nameMap = new LinkedHashMap<>();
 
     public Stopwatch() {}
 
