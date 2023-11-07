@@ -14,7 +14,6 @@ import java.util.function.IntFunction;
  * @param <T> the array type
  */
 public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializable {
-    private static final Map<Object, ArrayLike<?>> cache = new HashMap<>();
 
     /**
      * The representing array type.
@@ -89,46 +88,6 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
         }
     }
 
-    public void cacheTranspose() {
-        cache.put(this.hashCode(), this.transpose());
-    }
-
-    public void cacheTranspose(int row, int col) {
-        cache.put(row * col + this.hashCode(), this.transpose(row, col));
-    }
-
-    /**
-     * Transposes this array.
-     * The array must be a perfect square size,
-     * or of size zero.
-     *
-     * @apiNote Implementations should be optionally turning
-     * this feature on, as this method throws an exception if
-     * the array is not of a complete square.
-     */
-    protected ArrayLike<T> transpose() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Transposes this array.
-     * The array must be a perfect square size,
-     * or of size zero.
-     * <br />
-     * Transposing is done by seeking individual row and column
-     * for elements and performing the same operation as a matrix
-     * transpose.
-     *
-     * @param row the row
-     * @param col the column
-     * @apiNote Implementations should be optionally turning
-     * this feature on, as this method throws an exception if
-     * the {@code row * col} does not equal to {@link ArrayLike#size()}
-     */
-    protected ArrayLike<T> transpose(int row, int col) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Converts the representing array into an object array
      * @return the array, may or may not represent itself and
@@ -152,6 +111,13 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
         return new ArrayIterator<>(this);
     }
 
+
+    /**
+     * Clones this array type.
+     * @return the clone of this array
+     * @apiNote As this class wraps a mutable array, it is
+     * almost always recommended to
+     */
     @Override @SuppressWarnings("unchecked")
     public ArrayLike<T> clone() {
         try {

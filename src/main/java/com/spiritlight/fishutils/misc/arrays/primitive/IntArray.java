@@ -82,36 +82,6 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
         return new IntArray(this.array.clone(), false);
     }
 
-    public IntArray transpose() {
-        if(Math.sqrt(this.size()) != (int) Math.sqrt(size())) throw new IllegalArgumentException("not a square sized array");
-
-        IntArray array = createMutable(this.size());
-
-        int length = (int) Math.sqrt(this.size());
-
-        int idx = 0;
-        for(int i = 0; i < length; i++) {
-            for(int j = 0; j < length; j++) {
-                int index = i + j * length;
-                array.set(idx++, get(index));
-            }
-        }
-        return array;
-    }
-
-    @Override
-    public IntArray transpose(int row, int col) {
-        IntArray array = IntArray.createMutable(row * col);
-        int idx = 0;
-        for(int i = 0; i < row; i++) {
-            for(int j = 0; j < col; j++) {
-                int index = i + j * col;
-                array.set(idx++, get(index));
-            }
-        }
-        return array;
-    }
-
     public IntArray copy() {
         return new IntArray(this.array.clone());
     }

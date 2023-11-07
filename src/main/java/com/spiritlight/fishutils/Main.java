@@ -12,32 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            IntArray array = IntArray.fromArray(
-                    1, 1, 1, 1,
-                    2, 2, 2, 2,
-                    3, 3, 3, 3,
-                    4, 4, 4, 4
-            ).toMutable();
 
-            IntArray expected = IntArray.fromArray(
-                    1, 2, 3, 4,
-                    1, 2, 3, 4,
-                    1, 2, 3, 4,
-                    1, 2, 3, 4
-            );
-
-            IntArray out = array.transpose();
-
-            if(!out.equals(expected)) {
-                System.out.printf("""
-                        Unexpected transposition result:
-                        
-                        Expecting %s from %s
-                        Got %s
-                        """, expected, array, out);
-            } else {
-                System.out.println("ok");
-            }
         } catch (Throwable t) {
             t.printStackTrace();
         }
