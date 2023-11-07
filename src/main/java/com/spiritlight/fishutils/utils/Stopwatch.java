@@ -16,9 +16,9 @@ public class Stopwatch {
     // Holds the time since the fence started
     private final Map<String, Long> timeMap = new DefaultedMap<>(0L);
     // Holds the records
-    private final Map<String, Long> records = new HashMap<>();
+    private final Map<String, Long> records = new LinkedHashMap<>();
     // Holds the name translations
-    private final Map<String, String> nameMap = new LinkedHashMap<>();
+    private final Map<String, String> nameMap = new HashMap<>();
 
     public Stopwatch() {}
 
