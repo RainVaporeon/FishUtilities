@@ -65,12 +65,37 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
     }
 
     /**
+     * Internal method used to retrieve the array directly.
+     * Implementations of this class may benefit from overriding
+     * this method and return the direct reference to the backing
+     * array, which is usually going to increase speed.
+     * @return the backing array
+     * @implNote By default, this method returns null and therefore
+     * is not used.
+     * One has to return the actual backing array
+     * if they do not wish to implement all other misc methods but
+     * also wishes for some extent of speed benefits.
+     * In other words, <b>the default methods may use the array returned
+     * here to do operations!</b> Therefore, it is important that the latest
+     * reference of the backing array should be used.
+     */
+    protected T[] getInternalArray() {
+        return null;
+    }
+
+    /**
      * Fills this array in a given range to the specified value
      * @param from the offset to start, inclusive
      * @param to the offset to end, exclusive
      * @param value the value
      */
     public void fill(int from, int to, T value) {
+        T[] intern = this.getInternalArray();
+        if(intern != null) {
+            if(!this.isMutable()) throw new UnsupportedOperationException();
+            Arrays.fill(intern, from, to, value);
+            return;
+        }
         for(int i = from; i < to; i++) {
             set(i, value);
         }
@@ -100,6 +125,10 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
      * against modification of the returned array.
      */
     public @New T[] toArray() {
+        T[] intern = this.getInternalArray();
+        if(intern != null) {
+            return intern.clone();
+        }
         Object[] ret = new Object[this.size()];
         for (int i = 0; i < size(); i++) {
             ret[i] = get(i);
@@ -117,11 +146,21 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
      * Clones this array type.
      * @return the clone of this array
      * @apiNote As this class wraps a mutable array, it is
-     * almost always recommended to
+     * almost always recommended to override this method
+     * so the backing array is also cloned.
+     * By default, the mutation to the array itself will still reflect
+     * onto the origin object!
+     * @implNote if {@link ArrayLike#getInternalArray()} is implemented,
+     * this method may return a new instance of {@link ArrayLike} with
+     * a clone of the array provided.
      */
     @Override @SuppressWarnings("unchecked")
     public ArrayLike<T> clone() {
         try {
+            T[] intern = this.getInternalArray();
+            if(intern != null) {
+                return ArrayLike.of(intern.clone());
+            }
             return (ArrayLike<T>) super.clone();
         } catch (CloneNotSupportedException error) {
             // Java's fault
