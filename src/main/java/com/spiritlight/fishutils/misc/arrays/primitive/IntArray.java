@@ -169,8 +169,6 @@ public class IntArray extends PrimitiveArrayLike<Integer> {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(mutable);
-        result = 31 * result + Arrays.hashCode(array);
-        return result;
+        return Arrays.hashCode(array);
     }
 }

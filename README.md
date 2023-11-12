@@ -20,4 +20,4 @@ Run `push version [-snapshot]` after building.
 
 If it doesn't work the first time, the second time might work.
 If the second time does not work, double-check your parameter
-and re-open the cmd since the file is wonky on command line.
+and re-open the cmd since the file is wonky on the command line.

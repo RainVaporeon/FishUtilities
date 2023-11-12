@@ -136,7 +136,7 @@ public class CharacterArray extends PrimitiveArrayLike<Character> {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         CharacterArray arr = (CharacterArray) object;
-        return mutable == arr.mutable && Arrays.equals(array, arr.array);
+        return Arrays.equals(array, arr.array);
     }
 
     @Override
@@ -146,9 +146,7 @@ public class CharacterArray extends PrimitiveArrayLike<Character> {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(mutable);
-        result = 31 * result + Arrays.hashCode(array);
-        return result;
+        return Arrays.hashCode(array);
     }
 
 }

@@ -103,6 +103,11 @@ public class Stopwatch {
         timeMap.clear();
     }
 
+    /**
+     * Returns a string representation of all times
+     * that was recorded with {@link Stopwatch#record(String)}
+     * @return the record string
+     */
     public String getRecordString() {
         StringBuilder builder = new StringBuilder();
         records.forEach((name, time) -> {

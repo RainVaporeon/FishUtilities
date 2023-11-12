@@ -146,7 +146,7 @@ public class LongArray extends PrimitiveArrayLike<Long> {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         LongArray arr = (LongArray) object;
-        return mutable == arr.mutable && Arrays.equals(array, arr.array);
+        return Arrays.equals(array, arr.array);
     }
 
     @Override
@@ -156,9 +156,7 @@ public class LongArray extends PrimitiveArrayLike<Long> {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(mutable);
-        result = 31 * result + Arrays.hashCode(array);
-        return result;
+        return Arrays.hashCode(array);
     }
 
 }

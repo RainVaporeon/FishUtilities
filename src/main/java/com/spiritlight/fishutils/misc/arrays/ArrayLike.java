@@ -1,6 +1,7 @@
 package com.spiritlight.fishutils.misc.arrays;
 
 import com.spiritlight.fishutils.misc.annotations.New;
+import com.spiritlight.fishutils.misc.arrays.primitive.*;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -136,6 +137,16 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
         return Arrays.toString(this.toArray());
     }
 
+    /**
+     * Checks for object equality between one and another.
+     * @param obj the object
+     * @return whether both backing arrays are equal
+     * @implNote it is almost always recommended that the implementation
+     * should implement their own equals method, as this method will
+     * fetch both side's array via the {@link ArrayLike#toArray()} method,
+     * which can be slow at times, thus nearly any implementation will be
+     * beneficial.
+     */
     @Override
     public boolean equals(Object obj) {
         if(obj == null) return false;
@@ -149,5 +160,37 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
     @SafeVarargs
     public static <T> ArrayLike<T> of(T... elements) {
         return new ReferenceArray<>(elements);
+    }
+
+    public static IntArray of(int... elements) {
+        return new IntArray(elements);
+    }
+
+    public static DoubleArray of(double... elements) {
+        return new DoubleArray(elements);
+    }
+
+    public static ShortArray of(short... elements) {
+        return new ShortArray(elements);
+    }
+
+    public static LongArray of(long... elements) {
+        return new LongArray(elements);
+    }
+
+    public static ByteArray of(byte... el) {
+        return new ByteArray(el);
+    }
+
+    public static FloatArray of(float... f) {
+        return new FloatArray(f);
+    }
+
+    public static CharacterArray of(char... c) {
+        return new CharacterArray(c);
+    }
+
+    public static BooleanArray of(boolean... boo) {
+        return new BooleanArray(boo);
     }
 }
