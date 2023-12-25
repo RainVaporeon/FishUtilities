@@ -108,6 +108,8 @@ public class StableField<T> implements Serializable, Cloneable {
         }
     }
 
+    public static void ensureInitialized() { /* static loading */}
+
     static {
         UtilityAccess.setAccess("stableFieldAccess", new StableFieldAccess() {
             @Override

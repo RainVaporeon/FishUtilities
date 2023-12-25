@@ -1,7 +1,6 @@
 package com.spiritlight.fishutils.internal;
 
 import com.spiritlight.fishutils.internal.accessor.StableFieldAccess;
-import com.spiritlight.fishutils.misc.FieldLookup;
 import com.spiritlight.fishutils.misc.StableField;
 import com.spiritlight.fishutils.misc.annotations.MayExplode;
 
@@ -13,7 +12,8 @@ public class UtilityAccess {
     private static final UtilityAccess instance = new UtilityAccess();
 
     private static final Map<String, Class<?>> classMap = new HashMap<>() {{
-       put("stableFieldAccess", StableField.class);
+        StableField.ensureInitialized();
+        put("stableFieldAccess", StableField.class);
     }};
 
     @MayExplode
