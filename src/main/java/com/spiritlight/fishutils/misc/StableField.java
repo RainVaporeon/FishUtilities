@@ -1,7 +1,11 @@
 package com.spiritlight.fishutils.misc;
 
+import com.spiritlight.fishutils.internal.UtilityAccess;
+import com.spiritlight.fishutils.internal.accessor.StableFieldAccess;
 import com.spiritlight.fishutils.misc.annotations.DelegatesToShadow;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 /**
@@ -9,7 +13,7 @@ import java.util.Objects;
  * @param <T> the type
  * @since 1.2.6
  */
-public class StableField<T> {
+public class StableField<T> implements Serializable, Cloneable {
     @DelegatesToShadow.Target
     private T t;
     private boolean modified;
@@ -85,5 +89,31 @@ public class StableField<T> {
     @Override @DelegatesToShadow
     public String toString() {
         return String.valueOf(t);
+    }
+
+    @Override
+    public StableField<T> clone() {
+        if(t instanceof Cloneable) {
+            try /* evil dark magic */ {
+                Method method = t.getClass().getMethod("clone");
+                method.setAccessible(true);
+                StableField<T> ret = new StableField<>((T) method.invoke(t));
+                if(this.modified) ret.modified = true;
+                return ret; // default to false
+            } catch (Exception ex) {
+                throw new AssertionError("clone failed on cloneable type " + t.getClass().getName() + ": ", ex);
+            }
+        } else {
+            throw new RuntimeException("calling clone to non-cloneable type " + t.getClass().getName());
+        }
+    }
+
+    static {
+        UtilityAccess.setAccess("stableFieldAccess", new StableFieldAccess() {
+            @Override
+            public <T> void updateField(StableField<T> field, T value) {
+                field.t = value;
+            }
+        });
     }
 }

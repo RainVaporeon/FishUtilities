@@ -1,7 +1,5 @@
 package com.spiritlight.fishutils.misc.arrays;
 
-import com.spiritlight.fishutils.misc.arrays.ArrayLike;
-
 public class ReferenceArray<T> extends ArrayLike<T> {
     private final T[] array;
     private final boolean mutable;
@@ -38,5 +36,10 @@ public class ReferenceArray<T> extends ArrayLike<T> {
     @Override
     public boolean isMutable() {
         return mutable;
+    }
+
+    @Override
+    protected synchronized T[] getInternalArray() {
+        return array;
     }
 }

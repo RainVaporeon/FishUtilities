@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 /**
@@ -79,7 +80,7 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
      * here to do operations!</b> Therefore, it is important that the latest
      * reference of the backing array should be used.
      */
-    protected T[] getInternalArray() {
+    protected synchronized T[] getInternalArray() {
         return null;
     }
 

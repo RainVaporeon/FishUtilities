@@ -1,0 +1,46 @@
+package com.spiritlight.fishutils.internal;
+
+import com.spiritlight.fishutils.internal.accessor.StableFieldAccess;
+import com.spiritlight.fishutils.misc.FieldLookup;
+import com.spiritlight.fishutils.misc.StableField;
+import com.spiritlight.fishutils.misc.annotations.MayExplode;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
+public class UtilityAccess {
+    private static final UtilityAccess instance = new UtilityAccess();
+
+    private static final Map<String, Class<?>> classMap = new HashMap<>() {{
+       put("stableFieldAccess", StableField.class);
+    }};
+
+    @MayExplode
+    public static UtilityAccess getInstance() {
+        return instance;
+    }
+
+    @MayExplode
+    public StableFieldAccess getStableFieldAccess() {
+        return stableFieldAccess;
+    }
+
+    public static void setAccess(String parameter, Object value) {
+        Class<?> caller = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
+        Class<?> expected = UtilityAccess.classMap.get(parameter);
+        if(caller != expected) throw new IllegalArgumentException("illegal caller class");
+
+        try {
+            Field field = UtilityAccess.class.getDeclaredField(parameter);
+            field.setAccessible(true);
+            field.set(null, value);
+        } catch (ReflectiveOperationException ex) {
+            throw new AssertionError("failed to initialize access field " + parameter + "@" + value + ": ", ex);
+        }
+    }
+
+    private StableFieldAccess stableFieldAccess;
+
+
+}

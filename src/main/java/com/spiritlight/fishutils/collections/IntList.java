@@ -1,11 +1,16 @@
 package com.spiritlight.fishutils.collections;
 
-import com.spiritlight.fishutils.collections.iterators.ArrayIterator;
+import com.spiritlight.fishutils.misc.annotations.DelegatesToShadow;
 
 import java.util.*;
 
+@DelegatesToShadow
 public class IntList implements List<Integer> {
-    private final List<Integer> back = new ArrayList<>();
+    @DelegatesToShadow.Target
+    private final List<Integer> back;
+
+    public IntList() { this.back = new ArrayList<>(); }
+    public IntList(int capacity) { this.back = new ArrayList<>(capacity); }
 
     @Override
     public int size() {

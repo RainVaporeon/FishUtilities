@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Consumer;
 
 /**
  * An event bus which fires events to listeners.
@@ -32,6 +33,8 @@ public class EventBus {
 
     private final List<Object> subscribers = new CopyOnWriteArrayList<>();
     private final Set<EventBus> inheritances = new CopyOnWriteArraySet<>();
+
+    private Consumer<Throwable> errorHandler;
 
     /**
      * whether the bus should be able to receive the same event
@@ -58,7 +61,8 @@ public class EventBus {
      */
     public EventBus(boolean processDuplicates) {
         UUID identifier;
-        // Keeps fetching until there are no duplicating identifier.
+        // Keeps fetching until there are no duplicating identifiers.
+
         //noinspection StatementWithEmptyBody
         while(registeredInstances.contains((identifier = UUID.randomUUID())));
         registeredInstances.add(identifier);
@@ -68,6 +72,14 @@ public class EventBus {
 
     public EventBus() {
         this(false);
+    }
+
+    /**
+     * Sets the error handler for this event bus
+     * @param errorHandler the handler, or null to drop errors.
+     */
+    public void setErrorHandler(Consumer<Throwable> errorHandler) {
+        this.errorHandler = errorHandler;
     }
 
     public void subscribe(Object object) throws InvalidSubscriberException {
@@ -121,7 +133,7 @@ public class EventBus {
         this.inheritances.forEach(this::recursionCheck);
     }
 
-    private static void fire(Object o, Event event) {
+    private void fire(Object o, Event event) {
         EventBusSubscriber a; Class<?> c;
         Method[] methods;
         Object invocationTarget;
@@ -144,13 +156,21 @@ public class EventBus {
                 } else {
                     for(Class<?> clazz : a.only()) {
                         if(clazz == c) {
-                            ActionResult.run(() -> method.invoke(invocationTarget, event));
+                            ActionResult.run(() -> method.invoke(invocationTarget, event))
+                                    .onFail(t -> {
+                                        if(t instanceof ReflectiveOperationException rf) throw new InternalError("Failed to invoke " + method + ": ", rf);
+                                        if(this.errorHandler != null) this.errorHandler.accept(t);
+                                    });
                             break condition;
                         }
                     }
                     for(Class<?> clazz : a.value()) {
                         if(clazz.isAssignableFrom(c)) {
-                            ActionResult.run(() -> method.invoke(invocationTarget, event));
+                            ActionResult.run(() -> method.invoke(invocationTarget, event))
+                                    .onFail(t -> {
+                                        if(t instanceof ReflectiveOperationException rf) throw new InternalError("Failed to invoke " + method + ": ", rf);
+                                        if(this.errorHandler != null) this.errorHandler.accept(t);
+                                    });
                             break condition;
                         }
                     }
