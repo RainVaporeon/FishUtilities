@@ -34,7 +34,7 @@ public class UtilityAccess {
         try {
             Field field = UtilityAccess.class.getDeclaredField(parameter);
             field.setAccessible(true);
-            field.set(null, value);
+            field.set(UtilityAccess.getInstance(), value);
         } catch (ReflectiveOperationException ex) {
             throw new AssertionError("failed to initialize access field " + parameter + "@" + value + ": ", ex);
         }
