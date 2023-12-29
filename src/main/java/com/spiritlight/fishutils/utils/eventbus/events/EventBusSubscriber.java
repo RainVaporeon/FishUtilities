@@ -35,4 +35,24 @@ public @interface EventBusSubscriber {
      * not subclasses of them.
      */
     Class<? extends Event>[] only() default {};
+
+    /**
+     * The priority of this subscriber
+     * @return the priority, normal by default
+     */
+    Priority priority() default Priority.NORMAL;
+
+    /**
+     * Priority for the event, higher event priority
+     * will always receive the event before lower priority,
+     * while there are no guarantees for two subscribers
+     * at the same priority to have any order of receiving.
+     */
+    enum Priority {
+        HIGHEST,
+        HIGH,
+        NORMAL,
+        LOW,
+        LOWEST
+    }
 }

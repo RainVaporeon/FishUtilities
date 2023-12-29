@@ -9,10 +9,14 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            SeededGenerator gen = new SeededGenerator(SeededGenerator.ALPHABET_NUMERICAL);
-            gen.setSeed("web");
-            gen.addNoise("web");
-            System.out.println(gen.generate(256));
+            String[] color = {"black", "white"};
+            String[] piece = {"pawn", "knight", "bishop", "rook", "queen", "king"};
+            for(String clr : color) {
+                for(String pie: piece) {
+                    System.out.println(clr.toUpperCase() + "_" + pie.toUpperCase() + " = helper.get(\"" +
+                            clr + "-" + pie + "\");");
+                }
+            }
         } catch (Throwable t) {
             t.printStackTrace();
         }

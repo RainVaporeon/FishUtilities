@@ -6,10 +6,7 @@ import com.spiritlight.fishutils.utils.eventbus.events.EventBusAccessor;
 import com.spiritlight.fishutils.utils.eventbus.events.EventBusSubscriber;
 
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
@@ -144,6 +141,17 @@ public class EventBus {
             invocationTarget = o;
             methods = o.getClass().getDeclaredMethods();
         }
+
+        // 1.2.15: Added EventBus priority
+        Arrays.sort(methods, (left, right) -> {
+            EventBusSubscriber l = left.getAnnotation(EventBusSubscriber.class);
+            EventBusSubscriber r = right.getAnnotation(EventBusSubscriber.class);
+            if(l == null && r == null) return 0;
+            if(l == null) return -1;
+            if(r == null) return 1;
+            // the lower the priority, the higher the ordinal.
+            return r.priority().ordinal() - l.priority().ordinal();
+        });
 
         for(Method method : methods) {
             condition:
