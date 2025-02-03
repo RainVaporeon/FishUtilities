@@ -25,20 +25,33 @@ import java.util.function.Consumer;
  */
 public class EventBus {
 
+    /**
+     * All registered instances in the event bus
+     */
     private static final Set<UUID> registeredInstances = new CopyOnWriteArraySet<>();
-    private final UUID identifier;
-
-    private final List<Object> subscribers = new CopyOnWriteArrayList<>();
-    private final Set<EventBus> inheritances = new CopyOnWriteArraySet<>();
-
-    private Consumer<Throwable> errorHandler;
+    protected final UUID identifier;
 
     /**
-     * whether the bus should be able to receive the same event
+     * Classes that are interested in events fired by this event bus
+     */
+    protected final List<Object> subscribers = new CopyOnWriteArrayList<>();
+
+    /**
+     * Buses that this bus is listening to
+     */
+    protected final Set<EventBus> inheritances = new CopyOnWriteArraySet<>();
+
+    /**
+     * The error handler to call when a method invocation fails
+     */
+    protected Consumer<Throwable> errorHandler;
+
+    /**
+     * Whether the bus should be able to receive the same event
      * multiple times. If this is {@code false}, this bus will
      * not write a signature to the event.
      */
-    private final boolean processDuplicates;
+    protected final boolean processDuplicates;
 
     /**
      * The shared event bus instance
@@ -49,7 +62,7 @@ public class EventBus {
      * Creates an event bus
      * @param processDuplicates whether this bus should be able to
      *                     receive the same event multiple times
-     * @apiNote "same event" in this context does not indicate that
+     * @apiNote "Same event" in this context does not indicate that
      * for event a and b, if {@code a.equals(b)} returns true, the
      * event is discarded, but rather if {@code a == b} is true,
      * the event is discarded.
@@ -65,6 +78,9 @@ public class EventBus {
         registeredInstances.add(identifier);
         this.identifier = identifier;
         this.processDuplicates = processDuplicates;
+        this.errorHandler = t -> {
+            throw (t instanceof RuntimeException ? (RuntimeException) t : new RuntimeException(t));
+        };
     }
 
     public EventBus() {
@@ -125,12 +141,12 @@ public class EventBus {
         inheritances.forEach(bus -> bus.fire(event));
     }
 
-    private void recursionCheck(EventBus parent) {
+    protected void recursionCheck(EventBus parent) {
         if(this.inheritances.contains(parent)) throw new IllegalStateException("recursive inheritance");
         this.inheritances.forEach(this::recursionCheck);
     }
 
-    private void fire(Object o, Event event) {
+    protected void fire(Object o, Event event) {
         EventBusSubscriber a; Class<?> c;
         Method[] methods;
         Object invocationTarget;
@@ -187,7 +203,7 @@ public class EventBus {
         }
     }
 
-    private static void check(Object o) {
+    protected static void check(Object o) {
         EventBusSubscriber a; Class<?> c; int cnt;
         Method[] methods = o instanceof Class<?> ? ((Class<?>) o).getMethods() : o.getClass().getDeclaredMethods();
         for(Method method : methods) {

@@ -233,4 +233,42 @@ public abstract class ArrayLike<T> implements Cloneable, Iterable<T>, Serializab
     public static BooleanArray of(boolean... boo) {
         return new BooleanArray(boo);
     }
+
+    // 1.2.18 mutable factory
+    @SafeVarargs
+    public static <T> ArrayLike<T> ofMutable(T... elements) {
+        return new ReferenceArray<>(true, elements);
+    }
+
+    public static IntArray ofMutable(int... elements) {
+        return new IntArray(elements, true);
+    }
+
+    public static DoubleArray ofMutable(double... elements) {
+        return new DoubleArray(elements, true);
+    }
+
+    public static ShortArray ofMutable(short... elements) {
+        return new ShortArray(elements, true);
+    }
+
+    public static LongArray ofMutable(long... elements) {
+        return new LongArray(elements, true);
+    }
+
+    public static ByteArray ofMutable(byte... el) {
+        return new ByteArray(el, true);
+    }
+
+    public static FloatArray ofMutable(float... f) {
+        return new FloatArray(f, true);
+    }
+
+    public static CharacterArray ofMutable(char... c) {
+        return new CharacterArray(c, true);
+    }
+
+    public static BooleanArray ofMutable(boolean... boo) {
+        return new BooleanArray(boo, true);
+    }
 }
