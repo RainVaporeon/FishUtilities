@@ -1,14 +1,22 @@
-if [ "$1" == "" ]; then
-echo 'USAGE: push \<version\> \[-snapshot\]'
-echo 'pushes current FishUtilities build;'
-else
-version=$1;
-esle
+if [ -z "$1" ]; then
+    echo 'USAGE: push <version> [-s]'
+    echo 'pushes current FishUtilities build'
+    exit 1
 fi
 
-if [ "$2" == "-snapshot" ]; then
-version="$1-SNAPSHOT"
+version=$1;
+
+if [ "$2" == "-s" ]; then
+    version="$1-SNAPSHOT"
 fi
+
+jarfile="./build/libs/FishUtilities-$version.jar"
+
+if [ ! -f "$jarfile" ]; then
+    echo "$jarfile not found. Run ./gradlew build first."
+    exit 1
+fi
+
 echo "pushing $version..."
-mvn install:install-file -Dfile=".\build\libs\FishUtilities-$version.jar" -DgroupId=io.github.rainvaporeon.fishutils -DartifactId=FishUtilities -Dversion=%version% -Dpackaging=jar -DgeneratePom=true
-echo pushed.
+mvn install:install-file -Dfile="$jarfile" -DgroupId=io.github.rainvaporeon.fishutils -DartifactId=FishUtilities -Dversion="$version" -Dpackaging=jar -DgeneratePom=true
+echo "pushed."
